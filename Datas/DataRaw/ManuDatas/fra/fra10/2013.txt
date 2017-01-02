@@ -1,0 +1,7 @@
+/en/a/fra.php?b=10&d=201314
+2013–2014 French League 1 — final standing
+1;09/08/2013 21:00;Montpellier;Montpellier;;Paris SG;Paris SG;;1;1;
+1;10/08/2013 21:00;Bordeaux;Bordeaux;;Monaco;Monaco;;0;2;
+1;10/08/2013 21:00;Evian;Evian;;Sochaux;Sochaux;;1;1;
+1;10/08/2013 21:00;Lille;Lille;;Lorient;Lorient;;1;0;
+1;10/08/2013 21:00;Lyon;Lyon;;Nice;Nice;;4;0;
