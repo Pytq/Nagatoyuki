@@ -1,11 +1,9 @@
 import tensorflow as tf
-import copy
 import ToolBox
 import Costs
-from abc import ABCMeta, abstractmethod
 
 
-class Model(object, metaclass=ABCMeta):
+class Model:
     def __init__(self, data_dict=None):
         
         self.data_dict = data_dict

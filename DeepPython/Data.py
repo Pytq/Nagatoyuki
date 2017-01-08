@@ -1,6 +1,5 @@
 import csv
 import ToolBox
-import copy
 import Params
 from random import shuffle
 

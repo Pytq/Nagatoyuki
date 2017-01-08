@@ -20,12 +20,12 @@ class Launch:
         self.model.define_logloss(regularized=True, trainable=True)
         self.model.finish_init()
         
-        # self.model.set_params(Params.paramStd)
+        self.model.set_params(Params.paramStd)
         ll_mean = 0.
         lls_mean = 0.
 
         TYPE_SLICE = 'Shuffle'
-        self.data.init_slices(TYPE_SLICE, feed_dict={'p_train': 0.001})
+        self.data.init_slices(TYPE_SLICE, feed_dict={'p_train': 0.5})
 
         with open(Params.OUTPUT, 'w') as csvfile:
             spamwriter = csv.writer(csvfile, delimiter=',', quotechar='|', quoting=csv.QUOTE_MINIMAL)

@@ -10,7 +10,7 @@ print(sys.version)
 
 data = Data.Data(Params.FILE + '.txt', typeslices='overtime')
 
-model = Bookmaker.Bookmaker(data_dict=data.dict_dataToModel)
+model = Elostd.Elostd(data_dict=data.dict_dataToModel)
 
 launch = Launch.Launch(data, model)
 
