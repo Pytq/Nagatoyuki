@@ -3,13 +3,25 @@ import ToolBox
 import copy
 import Params
 from random import shuffle
-import Slice
 
+import Slice
 ALL_FEATURES = ['saison', 'team_h', 'team_a', 'res', 'score_h', 'score_a', 'journee',
                 'odd_win_h', 'odd_tie', 'odd_los_h', 'odds']
 
                 
 class Data:
+    @staticmethod
+    def check_len(s):
+        check_len = []
+        for key in s:
+            check_len.append(len(s[key]))
+        if check_len[1:] != check_len[:-1]:
+            raise 'Data.py check_len'
+
+    @staticmethod
+    def is_empty(s):
+        return s[list(s.keys())[0]] == []
+
     def __init__(self, filename, features=ALL_FEATURES, remove_features=[], typeslices='overtime'):
 
         self.filename = filename
@@ -32,8 +44,8 @@ class Data:
         self.dict_dataToModel["nb_journee"]=int((self.dict_dataToModel["nb_saisons"]+1) * self.dict_dataToModel["nb_max_journee"])
         
         self.get_matches()
-        # self.shuffled_datas = deepcopy(self.datas)
-        # self.shuffle_datas()
+
+        Data.check_len(self.datas)
 
 
 ##### Getting datas from .txt : 
@@ -41,7 +53,7 @@ class Data:
     def get_matches(self, p=None): 
         with open(self.filename) as csvfile:
             spamreader = csv.reader(csvfile, delimiter=',')
-            spamreader.__next__() # ?? Essayer sans
+            spamreader.__next__()
             for row in spamreader:
                 if row:
                     [ID, saison, Date, journee, id1, id2, score1, score2, Spectateur, JourDeLaSemaine,
@@ -79,18 +91,16 @@ class Data:
     def init_slices(self, group):
         self.slices[group] = Slice.Slice(self.py_datas, group)
    
-    def get_slice(self, group, index=0, label=None):
+    def get_slice(self, group, feed_dict={}):
         if group not in self.slices:
             self.init_slices(group)
-        extract_slice = self.slices[group].get_slice(index=index, label=label)
+        extract_slice = self.slices[group].get_slice(feed_dict)
         s = {}
-        if not self.slices[group].is_shuffled():
-            source = self.datas
-        else:
-            source = self.shuffled_datas
-        for key in source:
-            s[key] = extract_slice(source[key])
+        for key in self.datas:
+            s[key] = extract_slice(self.datas[key])
+        Data.check_len(s)
         return s
+
         
 
         
