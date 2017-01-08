@@ -4,8 +4,6 @@ import Params
 import tensorflow as tf
 import csv
 import math
-import Data
-
 
 class Launch:
     def __init__(self, data, model, algogen=None):
@@ -22,25 +20,27 @@ class Launch:
         self.model.define_logloss(regularized=True, trainable=True)
         self.model.finish_init()
         
-        self.model.set_params(Params.paramStd)
+        # self.model.set_params(Params.paramStd)
         ll_mean = 0.
         lls_mean = 0.
-        
-        self.data.init_slices('Lpack')
+
+        TYPE_SLICE = 'Shuffle'
+        self.data.init_slices(TYPE_SLICE, feed_dict={'p_train': 0.001})
 
         with open(Params.OUTPUT, 'w') as csvfile:
             spamwriter = csv.writer(csvfile, delimiter=',', quotechar='|', quoting=csv.QUOTE_MINIMAL)
-            for i in range(self.data.slices['Lpack'].nb_slices):
+            for i in range(self.data.slices[TYPE_SLICE].nb_slices):
                 t = time.time()
                 self.model.reset()
 
-                slice_train = self.data.get_slice('Lpack', feed_dict={'index': i, 'label': 'train'})
-                slice_test = self.data.get_slice('Lpack', feed_dict={'index': i, 'label': 'test'})
+                slice_train = self.data.get_slice(TYPE_SLICE, feed_dict={'index': i, 'label': 'train', 'when_odd': False})
+                slice_test = self.data.get_slice(TYPE_SLICE, feed_dict={'index': i, 'label': 'test', 'when_odd': True})
                 
                 if not (self.data.is_empty(slice_train) or self.data.is_empty(slice_test)):
                     print(i)
-                    self.set_current_slice(slice_train)
-                    self.model.train('rll_res', Params.NB_LOOPS)
+                    if self.model.is_trainable():
+                        self.set_current_slice(slice_train)
+                        self.model.train('rll_res', Params.NB_LOOPS)
 
                     self.set_current_slice(slice_test)
                     ll = self.model.get_cost('ll_res')
@@ -60,8 +60,8 @@ class Launch:
                     lls_mean += ll**2
                     print(i, ll, '(time: ' + str(time.time() - t) + ')')
         
-        print('Mean: ', ll_mean/self.data.slices['Lpack'].nb_slices)
-        print('Std_Dev: ', math.sqrt(lls_mean/self.data.slices['Lpack'].nb_slices - (ll_mean/self.data.slices['Lpack'].nb_slices)**2))
+        print('Mean: ', ll_mean/self.data.slices[TYPE_SLICE].nb_slices)
+        print('Std_Dev: ', math.sqrt(lls_mean/self.data.slices[TYPE_SLICE].nb_slices - (ll_mean/self.data.slices[TYPE_SLICE].nb_slices)**2))
 
         self.model.close()
 
@@ -70,4 +70,3 @@ class Launch:
         for key in self.model.features_data():
             feed_dict[self.model.ph_current_slice[key]] = s[key]
         self.model.session.run(self.model.tf_assign_slice, feed_dict=feed_dict)
-        

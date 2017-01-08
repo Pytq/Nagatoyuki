@@ -1,12 +1,20 @@
 from copy import deepcopy
 import random
 
-class Slice:
 
-    def __init__(self, py_datas, group, p_train=None):
+class Slice:
+    def __init__(self, py_datas, group, feed_dict={}):
         
         self.group = group
-        self.p_train = p_train
+        # A changer et garder le dict !
+        if 'p_train' in feed_dict:
+            self.p_train = feed_dict['p_train']
+        else:
+            self.p_train = None
+        if 'when_odd' in feed_dict:
+            self.when_odd = feed_dict['when_odd']
+        else:
+            self.when_odd = None
         
         if group == 'Lpack':
             self.slices = {'train': [], 'test': []}
@@ -55,28 +63,24 @@ class Slice:
                 else:
                     print('overlapping train and test')
 
-    def shuffle_list(self, l, p):
+    def shuffle_list(self, l, p, train):
         n = len(l)
         random.seed(a=self.internal_seed)
-        return random.sample(l, n)[0:int(n*p)]
+        if train:
+            return random.sample(l, n)[:int(n*p)]
+        else:
+            return random.sample(l, n)[int(n*p):]
+
+    def shuffle_slice(self):
+        self.internal_seed = random.getrandbits(64)
 
     def get_slice(self, feed_dict):
         if self.group in ['Lpack']:
             return lambda l: l[self.slices[feed_dict['label']][feed_dict['index']]['left']:self.slices[feed_dict['label']][feed_dict['index']]['right']]
         elif self.group == 'Shuffle':
-            if self.p_train is None:
-                p = feed_dict['p_train']
-            else:
-                p = self.p_train
-            return lambda l: self.shuffle_list(l, p)
+            return lambda l: self.shuffle_list(l, self.p_train, feed_dict['label'] == 'train')
         else:
             print('warning Slices.get_slices')
-
-    def is_shuffled(self):
-        if self.group in ['Lpack']:
-            return False
-        else:
-            return True
             
                 
             

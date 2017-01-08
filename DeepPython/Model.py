@@ -58,7 +58,7 @@ class Model(object, metaclass=ABCMeta):
     def define_logloss(self, target='res', target_dim=1, name=None, regularized=False, trainable=False):
         cost = Costs.Cost(name=name)
         cost.define_logloss(target, target_dim, regularized=regularized)
-        self.add_cost(cost, trainable=trainable)
+        self.add_cost(cost, trainable=trainable and self.is_trainable())
 
     def add_cost(self, cost, trainable=False):
         if cost.name in self.costs:
@@ -99,26 +99,23 @@ class Model(object, metaclass=ABCMeta):
         print('Session closed with ' + str(ToolBox.nb_tf_op()) + ' nodes in tf.Graph')
         self.session.close()
 
-    @abstractmethod
     def meta_params(self):
-        pass
+        return []
 
-    @abstractmethod
     def features_data(self):
-        pass
+        return []
 
-    @abstractmethod
     def linear_meta_params(self):
-        pass
+        return []
 
-    @abstractmethod
     def define_parmeters(self):
-        pass
+        return []
 
-    @abstractmethod
     def get_prediction(self, s):
-        pass
+        return None
 
-    @abstractmethod
     def get_regularizer(self):
-        pass
+        return tf.constant(0.)
+
+    def is_trainable(self):
+        return True

@@ -3,13 +3,14 @@ import Elostd
 import Launch
 import Params
 import sys
+import Bookmaker
 
 print(sys.version)
 
 
 data = Data.Data(Params.FILE + '.txt', typeslices='overtime')
 
-model = Elostd.Elostd(data.dict_dataToModel) 
+model = Bookmaker.Bookmaker(data_dict=data.dict_dataToModel)
 
 launch = Launch.Launch(data, model)
 

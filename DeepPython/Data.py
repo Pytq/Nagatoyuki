@@ -50,7 +50,7 @@ class Data:
 
 ##### Getting datas from .txt : 
 
-    def get_matches(self, p=None): 
+    def get_matches(self):
         with open(self.filename) as csvfile:
             spamreader = csv.reader(csvfile, delimiter=',')
             spamreader.__next__()
@@ -88,8 +88,8 @@ class Data:
 
 ##### Gestion des slices:
 
-    def init_slices(self, group):
-        self.slices[group] = Slice.Slice(self.py_datas, group)
+    def init_slices(self, group, feed_dict={}):
+        self.slices[group] = Slice.Slice(self.py_datas, group, feed_dict=feed_dict)
    
     def get_slice(self, group, feed_dict={}):
         if group not in self.slices:
@@ -99,6 +99,17 @@ class Data:
         for key in self.datas:
             s[key] = extract_slice(self.datas[key])
         Data.check_len(s)
+
+        if feed_dict['when_odd']:
+            s2 = {}
+            for key in s:
+                s2[key] = []
+            for i in range(len(s['odd_tie'])):
+                if s['odd_tie'][i][0] >= 0.:
+                    for key in s2:
+                        s2[key].append(s[key][i])
+            s = s2
+
         return s
 
         
