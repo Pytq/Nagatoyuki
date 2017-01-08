@@ -4,6 +4,8 @@ import Params
 import tensorflow as tf
 import csv
 import math
+import Data
+
 
 class Launch:
     def __init__(self, data, model, algogen=None):
@@ -13,7 +15,7 @@ class Launch:
         self.algogen = algogen
         self.tf_operations = [] 
         self.session = None
-        
+
     def Go(self): 
 
         self.model.define_logloss(regularized=False, trainable=False)
@@ -26,16 +28,16 @@ class Launch:
         
         self.data.init_slices('Lpack')
 
-        with open('hey.csv', 'w') as csvfile:
+        with open(Params.OUTPUT, 'w') as csvfile:
             spamwriter = csv.writer(csvfile, delimiter=',', quotechar='|', quoting=csv.QUOTE_MINIMAL)
             for i in range(self.data.slices['Lpack'].nb_slices):
                 t = time.time()
                 self.model.reset()
 
-                slice_train = self.data.get_slice('Lpack', index=i, label='train')
-                slice_test = self.data.get_slice('Lpack', index=i, label='test')
+                slice_train = self.data.get_slice('Lpack', feed_dict={'index': i, 'label': 'train'})
+                slice_test = self.data.get_slice('Lpack', feed_dict={'index': i, 'label': 'test'})
                 
-                if(slice_train[list(slice_train.keys())[0]] != [] and slice_test[list(slice_test.keys())[0]] != []):
+                if not (self.data.is_empty(slice_train) or self.data.is_empty(slice_test)):
                     print(i)
                     self.set_current_slice(slice_train)
                     self.model.train('rll_res', Params.NB_LOOPS)
@@ -60,8 +62,7 @@ class Launch:
         
         print('Mean: ', ll_mean/self.data.slices['Lpack'].nb_slices)
         print('Std_Dev: ', math.sqrt(lls_mean/self.data.slices['Lpack'].nb_slices - (ll_mean/self.data.slices['Lpack'].nb_slices)**2))
-        
-        
+
         self.model.close()
 
     def set_current_slice(self, s): 

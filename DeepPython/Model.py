@@ -5,8 +5,8 @@ import Costs
 from abc import ABCMeta, abstractmethod
 
 
-class Model(object,metaclass=ABCMeta):
-    def __init__(self, data_dict = None):
+class Model(object, metaclass=ABCMeta):
+    def __init__(self, data_dict=None):
         
         self.data_dict = data_dict
         
@@ -47,7 +47,6 @@ class Model(object,metaclass=ABCMeta):
         self.reset_op = tf.initialize_variables(params, name='init')
         self.prediction['res'] = self.get_prediction(self.current_slice, 'res')
         self.regulizer = self.get_regularizer()
-
 
 
     def finish_init(self):

@@ -1,10 +1,12 @@
 from copy import deepcopy
+import random
 
 class Slice:
 
-    def __init__(self, py_datas, group):
+    def __init__(self, py_datas, group, p_train=None):
         
         self.group = group
+        self.p_train = p_train
         
         if group == 'Lpack':
             self.slices = {'train': [], 'test': []}
@@ -33,28 +35,40 @@ class Slice:
             self.check_slices(group)
 
         elif group == 'Shuffle':
-            self.slices = {'train': [], 'test': []}
-            p = 0.5
-            self.slices['test'] = [{'left': 0, 'right': int(self.data.nb_matchs * p)}]
-            self.slices['train'] = [{'left': int(self.data.nb_matchs * p)+1, 'right': self.data.nb_matchs}]
+            # self.slices = {'train': [], 'test': []}
+            # p = 0.5
+            # self.slices['test'] = [{'left': 0, 'right': int(self.data.nb_matchs * p)}]
+            # self.slices['train'] = [{'left': int(self.data.nb_matchs * p)+1, 'right': self.data.nb_matchs}]
             self.nb_slices = 1
+            self.internal_seed = random.getrandbits(64)
 
         else:
             print('Unkown type ' + type)
-            
-            
+
     def check_slices(self, group):
-        self.nb_slices = min(len(self.slices['test']), len(self.slices['train']))
-        for i in range(self.nb_slices):
-            if self.slices['train'][i]['right'] <= self.slices['test'][i]['left'] or self.slices['train'][i]['left'] >= self.slices['test'][i]['right']:
-                if self.slices['train'][i]['name'] != 'train_'+str(i) or self.slices['test'][i]['name'] != 'test_'+str(i):
-                    print('slice error')
+        if group == 'Lpack':
+            self.nb_slices = min(len(self.slices['test']), len(self.slices['train']))
+            for i in range(self.nb_slices):
+                if self.slices['train'][i]['right'] <= self.slices['test'][i]['left'] or self.slices['train'][i]['left'] >= self.slices['test'][i]['right']:
+                    if self.slices['train'][i]['name'] != 'train_'+str(i) or self.slices['test'][i]['name'] != 'test_'+str(i):
+                        print('slice error')
+                else:
+                    print('overlapping train and test')
+
+    def shuffle_list(self, l, p):
+        n = len(l)
+        random.seed(a=self.internal_seed)
+        return random.sample(l, n)[0:int(n*p)]
+
+    def get_slice(self, feed_dict):
+        if self.group in ['Lpack']:
+            return lambda l: l[self.slices[feed_dict['label']][feed_dict['index']]['left']:self.slices[feed_dict['label']][feed_dict['index']]['right']]
+        elif self.group == 'Shuffle':
+            if self.p_train is None:
+                p = feed_dict['p_train']
             else:
-                print('overlapping train and test')
-    
-    def get_slice(self, index=0, label=None):
-        if self.group in ['Lpack', 'Shuffle']:
-            return lambda l: l[self.slices[label][index]['left']:self.slices[label][index]['right']]
+                p = self.p_train
+            return lambda l: self.shuffle_list(l, p)
         else:
             print('warning Slices.get_slices')
 

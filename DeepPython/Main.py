@@ -7,11 +7,11 @@ import sys
 print(sys.version)
 
 
-data = Data.Data('Datas/' + Params.FILE + '.txt', typeslices = 'overtime')
+data = Data.Data(Params.FILE + '.txt', typeslices='overtime')
 
 model = Elostd.Elostd(data.dict_dataToModel) 
 
-launch = Launch.Launch(data,model)
+launch = Launch.Launch(data, model)
 
 launch.Go()
 

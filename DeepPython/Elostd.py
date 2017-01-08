@@ -2,6 +2,7 @@ import tensorflow as tf
 import ToolBox
 import Model as M
 
+
 class Elostd(M.Model):
     def meta_params(self):
         return ['metaparam0', 'metaparam1', 'metaparamj0', 'metaparamj1',
@@ -49,3 +50,4 @@ class Elostd(M.Model):
         regulizer_list.append(cost)
 
         return tf.add_n(regulizer_list)
+
