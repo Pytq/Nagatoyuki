@@ -10,7 +10,7 @@ print(sys.version)
 
 data = Data.Data(Params.FILE + '.txt')
 
-model = Bookmaker.Bookmaker(data_dict=data.meta_datas)
+model = Bookmaker.Bookmaker(data_dict=data.meta_datas, customizator={'normalized': True})
 
 launch = Launch.Launch(data, model)
 
