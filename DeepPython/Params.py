@@ -10,6 +10,8 @@ FILE = '../Datas/DataClean/ResultWithOdds2'
 OUTPUT = '../Output/output'
 NB_LOOPS = 60
 
+CHECK_SLICE_OVERLAP = False
+
 #UNUSED
 DATA_TYPE = tf.float32
 MAX_SEED = int(1e16)

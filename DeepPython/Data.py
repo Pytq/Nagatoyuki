@@ -1,11 +1,11 @@
 import csv
 import ToolBox
 import Params
-from random import shuffle
-
 import Slice
+
 ALL_FEATURES = ['saison', 'team_h', 'team_a', 'res', 'score_h', 'score_a', 'journee',
                 'odd_win_h', 'odd_tie', 'odd_los_h', 'odds']
+
 
 class Data:
 
@@ -22,10 +22,14 @@ class Data:
         self.__get_formated_datas()
         Data.check_len(self.__datas)
 
-    def init_slices(self, group, feed_dict={}):
+    def init_slices(self, group, feed_dict=None):
+        if feed_dict is None:
+            feed_dict = {}
         self.__slices[group] = Slice.Slice(self.py_datas, group, feed_dict=feed_dict)
 
-    def get_slice(self, group, feed_dict={}):
+    def get_slice(self, group, feed_dict=None):
+        if feed_dict is None:
+            feed_dict = {}
         if group not in self.__slices:
             self.init_slices(group)
         extract_slice = self.__slices[group].get_slice(feed_dict)
@@ -33,7 +37,7 @@ class Data:
         for key in self.__datas:
             s[key] = extract_slice(self.__datas[key])
         Data.check_len(s)
-        if feed_dict['when_odd']:
+        if 'when_odd' in feed_dict and feed_dict['when_odd']:
             s2 = {}
             for key in s:
                 s2[key] = []
