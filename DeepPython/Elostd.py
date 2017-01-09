@@ -1,6 +1,5 @@
 import tensorflow as tf
-import ToolBox
-import Model as M
+from DeepPython import ToolBox, Model as M
 
 
 class Elostd(M.Model):

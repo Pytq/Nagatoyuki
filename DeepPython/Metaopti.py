@@ -31,7 +31,7 @@ class MetaOpti:
                     x[key] = x[key] * 2. + sign
                     z = self.fun(x)
                 if x[key] >= 10**8:
-                    raise 'out of range'
+                    raise Exception('Out of range')
                 prange = max(prange, abs(x[key]))
             self.paramrange[key] = prange
             x[key] = 0.

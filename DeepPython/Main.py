@@ -1,9 +1,7 @@
-import Data
 import Elostd
-import Launch
-import Params
 import sys
-import Bookmaker
+from DeepPython import Data, Bookmaker, Launch, Params
+
 
 print(sys.version)
 
@@ -12,9 +10,9 @@ data = Data.Data(Params.FILE)
 
 model = Bookmaker.Bookmaker(data_dict=data.meta_datas, customizator={'normalized': True})
 
-launch = Launch.Launch(data, model)
+launch = Launch.Launch(data, model, 'Shuffle')
 
-launch.Go()
+launch.execute()
 
 """
 

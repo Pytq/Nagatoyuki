@@ -1,7 +1,5 @@
 import csv
-import ToolBox
-import Params
-import Slice
+from DeepPython import ToolBox, Params, Slice
 
 ALL_FEATURES = ['saison', 'team_h', 'team_a', 'res', 'score_h', 'score_a', 'journee',
                 'odd_win_h', 'odd_tie', 'odd_los_h', 'odds']
