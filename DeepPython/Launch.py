@@ -6,11 +6,11 @@ import math
 import Costs
 
 class Launch:
-    def __init__(self, data, model, OptimizationMethod=None):
+    def __init__(self, data, model, optimizationMethod = None):
         
         self.data = data
         self.model = model
-        self.OptimizationMethod = OptimizationMethod
+        self.OptimizationMethod = optimizationMethod
         self.tf_operations = [] 
         self.session = None
 
