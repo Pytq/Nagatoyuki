@@ -17,10 +17,13 @@ class Cost:
 
         self.__parameters = feed_dict
         self.__group = group
+        self.__cost = None
         self.name = name
-        self.cost = None
 
         self.switcher[self.__group]()
+
+    def get_cost(self, model):
+        return self.__cost(model)
 
     def __add__(self, other):
         return self.__apply(other, lambda x, y: x + y)
@@ -42,7 +45,7 @@ class Cost:
             self.name = 'll_' + self.__parameters['target']
             if self.__parameters['regularized']:
                 self.name = 'r' + self.name
-        self.cost = self.__cost_logloss
+        self.__cost = self.__cost_logloss
 
     def __cost_logloss(self, m):
         reduction_indices = [i + 1 for i in range(self.__parameters['feature_dim'])]
@@ -57,8 +60,8 @@ class Cost:
         result = Cost()
         if type(other) in [type(0), type(0.)]:
             result.name = self.name + '+' + str(other)
-            result.cost = lambda m: fun(self.cost(m), other)
+            result.__cost = lambda m: fun(self.__cost(m), other)
         else:
             result.name = self.name + '+' + other.name
-            result.cost = lambda m: fun(self.cost(m), other.cost(m))
+            result.__cost = lambda m: fun(self.__cost(m), other.cost(m))
         return result

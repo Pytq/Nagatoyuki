@@ -1,6 +1,5 @@
 import tensorflow as tf
 import ToolBox
-import Costs
 
 
 class Model:
@@ -52,7 +51,7 @@ class Model:
         if cost.name in self.costs:
             print('cost already defined')
         else:
-            self.costs[cost.name] = cost.cost(self)
+            self.costs[cost.name] = cost.get_cost(self)
             if trainable and self.is_trainable():
                 self.train_step[cost.name] = tf.train.AdamOptimizer(0.01).minimize(self.costs[cost.name])
 
