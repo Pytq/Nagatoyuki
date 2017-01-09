@@ -1,40 +1,39 @@
 # -*- coding: utf-8 -*-
 import time
-import Params
 import csv
 import math
-import Costs
+from DeepPython import Params, Costs
 
 
 class Launch:
-    def __init__(self, data, model):
+    def __init__(self, data, model, type_slice):
         self.data = data
         self.model = model
+        self.type_slice = type_slice
         self.tf_operations = []
         self.session = None
 
-    def Go(self):
+    def execute(self):
         ll_res = Costs.Cost('logloss', feed_dict={'target': 'res', 'feature_dim': 1, 'regularized': False})
         rll_res = Costs.Cost('logloss', feed_dict={'target': 'res', 'feature_dim': 1, 'regularized': True})
         self.model.add_cost(ll_res, trainable=False)
         self.model.add_cost(rll_res, trainable=True)
         self.model.finish_init()
         
-        # self.model.set_params(Params.paramStd)
+        self.model.set_params(Params.paramStd)
         ll_mean = 0.
         lls_mean = 0.
 
-        TYPE_SLICE = 'Shuffle'
-        self.data.init_slices(TYPE_SLICE, feed_dict={'p_train': 0.5})
+        self.data.init_slices(self.type_slice, feed_dict={'p_train': 0.5})
 
         with open(Params.OUTPUT, 'w') as csvfile:
             spamwriter = csv.writer(csvfile, delimiter=',', quotechar='|', quoting=csv.QUOTE_MINIMAL)
-            for i in range(self.data.nb_slices(TYPE_SLICE)):
+            for i in range(self.data.nb_slices(self.type_slice)):
                 t = time.time()
                 self.model.reset()
 
-                slice_train = self.data.get_slice(TYPE_SLICE, feed_dict={'index': i, 'label': 'train', 'when_odd': False})
-                slice_test = self.data.get_slice(TYPE_SLICE, feed_dict={'index': i, 'label': 'test', 'when_odd': True})
+                slice_train = self.data.get_slice(self.type_slice, feed_dict={'index': i, 'label': 'train', 'when_odd': False})
+                slice_test = self.data.get_slice(self.type_slice, feed_dict={'index': i, 'label': 'test', 'when_odd': True})
                 
                 if not (self.data.is_empty(slice_train) or self.data.is_empty(slice_test)):
                     print(i)
@@ -60,8 +59,8 @@ class Launch:
                     lls_mean += ll**2
                     print(i, ll, '(time: ' + str(time.time() - t) + ')')
         
-        print('Mean: ', ll_mean/self.data.nb_slices(TYPE_SLICE))
-        print('Std_Dev: ', math.sqrt(lls_mean/self.data.nb_slices(TYPE_SLICE) - (ll_mean/self.data.nb_slices(TYPE_SLICE))**2))
+        print('Mean: ', ll_mean/self.data.nb_slices(self.type_slice))
+        print('Std_Dev: ', math.sqrt(lls_mean/self.data.nb_slices(self.type_slice) - (ll_mean/self.data.nb_slices(self.type_slice))**2))
 
         self.model.close()
 
