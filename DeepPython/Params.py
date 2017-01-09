@@ -6,7 +6,7 @@ Created on Fri Dec 16 16:32:06 2016
 """
 import tensorflow as tf
 
-FILE = '../Datas/DataClean/ResultWithOdds2'
+FILE = '../Datas/DataClean/ResultWithOdds2.txt'
 OUTPUT = '../Output/output'
 NB_LOOPS = 60
 

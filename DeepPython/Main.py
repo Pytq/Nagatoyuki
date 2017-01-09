@@ -8,7 +8,7 @@ import Bookmaker
 print(sys.version)
 
 
-data = Data.Data(Params.FILE + '.txt')
+data = Data.Data(Params.FILE)
 
 model = Bookmaker.Bookmaker(data_dict=data.meta_datas, customizator={'normalized': True})
 

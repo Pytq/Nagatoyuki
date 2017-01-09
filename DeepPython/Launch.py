@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import time
 import Params
-import tensorflow as tf
 import csv
 import math
 import Costs

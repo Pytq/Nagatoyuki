@@ -3,23 +3,22 @@ import ToolBox
 
 
 class Model:
-    def __init__(self, data_dict=None, ):
-        
+    def __init__(self, data_dict=None, targets=['res'], customizator=None):
+
+        if customizator is None:
+            customizator = {}
+        self.customizator = customizator
+
         self.data_dict = data_dict
+
         self.costs = {}
-        self.regulizer = {}
         self.train_step = {}
         self.session = None
-        self.prediction = {}
-        self.metaparam = {}
         self.dictparam = {}
-        self.param = {}
-        self.ph_metaparam = {}
-        self.current_slice = {}
-        self.ph_current_slice = {}
-        self.tf_assign_slice = []
         self.init_all = None
 
+        self.metaparam = {}
+        self.ph_metaparam = {}
         for key in self.meta_params():
             if key in self.linear_meta_params():
                 self.ph_metaparam[key] = tf.placeholder(tf.float32)
@@ -28,17 +27,26 @@ class Model:
                 self.ph_metaparam[key] = tf.placeholder(tf.float32)
                 self.metaparam[key] = tf.exp(self.ph_metaparam[key])
 
+        self.current_slice = {}
+        self.ph_current_slice = {}
+        self.tf_assign_slice = []
         for key in self.features_data():
             self.ph_current_slice[key] = tf.placeholder(dtype=tf.float32)
             self.current_slice[key] = tf.Variable(self.ph_current_slice[key],
                                                   validate_shape=False, trainable=False, collections=[])
             assign_slice = tf.assign(self.current_slice[key], self.ph_current_slice[key], validate_shape=False)
             self.tf_assign_slice.append(assign_slice)
-            
+
+        self.param = {}
         self.define_parmeters()
+
         params = [self.param[key] for key in self.param]
         self.reset_op = tf.variables_initializer(params, name='init')
-        self.prediction['res'] = self.get_prediction(self.current_slice, 'res')
+
+        self.prediction = {}
+        for key in targets:
+            self.prediction[key] = self.get_prediction(self.current_slice, key)
+
         self.regulizer = self.get_regularizer()
 
     def finish_init(self):
@@ -76,9 +84,6 @@ class Model:
     def get_cost(self, cost):
         return self.run(self.costs[cost])
 
-#    def shuffle(self):
-#        self.session.run(self.data.shuffle)
-
     def run(self, x):
         return self.session.run(x, feed_dict=self.dictparam)
 
@@ -98,7 +103,7 @@ class Model:
     def define_parmeters(self):
         return []
 
-    def get_prediction(self, s):
+    def get_prediction(self, s, target):
         return None
 
     def get_regularizer(self):
