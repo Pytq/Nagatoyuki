@@ -8,9 +8,9 @@ import Bookmaker
 print(sys.version)
 
 
-data = Data.Data(Params.FILE + '.txt', typeslices='overtime')
+data = Data.Data(Params.FILE + '.txt')
 
-model = Elostd.Elostd(data_dict=data.dict_dataToModel)
+model = Bookmaker.Bookmaker(data_dict=data.meta_datas)
 
 launch = Launch.Launch(data, model)
 

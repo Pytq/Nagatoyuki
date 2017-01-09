@@ -1,3 +1,4 @@
+ID, saison, Date, journee, id1, id2, score1, score2, Spectateur, JourDeLaSemaine,FTR, FTHG, FTAG, BbMxH, BbMxD, BbMxA, BbAvH, BbAvD, BbAvA, HTHG, HTAG, HTR, HS, AS, HST, AST,HC, AC
 41575,1994,19940521,38,3,37,1,2,,Samedi,A,1,2,,,,,,,,,,,,,,,
 41570,1994,19940521,38,5,39,2,1,,Samedi,H,2,1,,,,,,,,,,,,,,,
 41572,1994,19940521,38,11,38,0,0,,Samedi,D,0,0,,,,,,,,,,,,,,,

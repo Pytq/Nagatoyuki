@@ -20,16 +20,16 @@ class Launch:
         self.model.define_logloss(regularized=True, trainable=True)
         self.model.finish_init()
         
-        self.model.set_params(Params.paramStd)
+        # self.model.set_params(Params.paramStd)
         ll_mean = 0.
         lls_mean = 0.
 
-        TYPE_SLICE = 'Shuffle'
+        TYPE_SLICE = 'Lpack'
         self.data.init_slices(TYPE_SLICE, feed_dict={'p_train': 0.5})
 
         with open(Params.OUTPUT, 'w') as csvfile:
             spamwriter = csv.writer(csvfile, delimiter=',', quotechar='|', quoting=csv.QUOTE_MINIMAL)
-            for i in range(self.data.slices[TYPE_SLICE].nb_slices):
+            for i in range(self.data.nb_slices(TYPE_SLICE)):
                 t = time.time()
                 self.model.reset()
 
@@ -60,8 +60,8 @@ class Launch:
                     lls_mean += ll**2
                     print(i, ll, '(time: ' + str(time.time() - t) + ')')
         
-        print('Mean: ', ll_mean/self.data.slices[TYPE_SLICE].nb_slices)
-        print('Std_Dev: ', math.sqrt(lls_mean/self.data.slices[TYPE_SLICE].nb_slices - (ll_mean/self.data.slices[TYPE_SLICE].nb_slices)**2))
+        print('Mean: ', ll_mean/self.data.nb_slices(TYPE_SLICE))
+        print('Std_Dev: ', math.sqrt(lls_mean/self.data.nb_slices(TYPE_SLICE) - (ll_mean/self.data.nb_slices(TYPE_SLICE))**2))
 
         self.model.close()
 
