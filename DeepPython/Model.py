@@ -40,7 +40,7 @@ class Model:
             self.tf_assign_slice.append(assign_slice)
 
         self.param = {}
-        self.define_parmeters()
+        self.define_parameters()
 
         params = [self.param[key] for key in self.param]
         self.reset_op = tf.variables_initializer(params, name='init')
@@ -97,12 +97,12 @@ class Model:
         return []
 
     def features_data(self):
-        return []
+        raise NotImplementedError
 
     def linear_meta_params(self):
-        return []
+        raise NotImplementedError
 
-    def define_parmeters(self):
+    def define_parameters(self):
         return []
 
     def get_prediction(self, s, target):
