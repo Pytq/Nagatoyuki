@@ -4,6 +4,7 @@ import numpy as np
 import math
 import time
 
+
 class MetaOptiDiffEvo:
     def __init__(self, data, paramnames, bounds, model):
         self.data = data
@@ -13,7 +14,7 @@ class MetaOptiDiffEvo:
         self.t = time.time()
 
         if len(paramnames) != len(bounds):
-            raise 'paramnames and bounds must match their respective size'
+            raise Exception('paramnames and bounds must match their respective size')
 
     def to_optimise(self, x):
         paramafter = {}
@@ -29,17 +30,16 @@ class MetaOptiDiffEvo:
             self.model.train_res()
         cost = self.model.get_cost('test')
         for key in paramafter:
-            if key !=  'bais_ext':
+            if key != 'bais_ext':
                 paramafter[key] = math.exp(paramafter[key])
             paramafter[key] = round(paramafter[key], 6)
-        print int(round(10000*cost)), int(10*(time.time() - self.t)), paramafter
+        print(int(round(10000*cost)), int(10*(time.time() - self.t)), paramafter)
         self.t = time.time()
         return cost
 
     def launch(self):
         result = differential_evolution(self.to_optimise, self.bounds)
         return result.x, result.fun
-
 
 
 class MetaOpti:
@@ -63,7 +63,7 @@ class MetaOpti:
         elif t == 'lin':
             rangee = [m + p * (i - self.M / 2) for i in range(self.M)]
         else:
-            print 'WTF ???? (line 22 METAOPTI LOL)'
+            raise Exception('WTF ???? (line 22 METAOPTI LOL)')
         for x in rangee:
             self.param[key] = x
             self.model.reset()
@@ -71,7 +71,7 @@ class MetaOpti:
             for i in range(100):
                 self.model.train_res()
             temp = self.target()
-            print key, x, 'current_los', temp
+            print(key, x, 'current_los', temp)
             if temp < cost:
                 cost = temp
                 elparam = x
@@ -82,9 +82,6 @@ class MetaOpti:
             self.paramrange[key] = elparam, p**self.L, t
         else:
             self.paramrange[key] = elparam, p * self.L, t
-        print 'final', cost,
+        print('final', cost)
         if costmax - cost < 0.001:
             del self.paramrange[key]
-
-
-

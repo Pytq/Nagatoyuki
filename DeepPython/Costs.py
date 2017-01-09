@@ -13,7 +13,7 @@ class Cost:
         }
 
         if group not in self.switcher:
-            raise ('Unkown type ' + group + 'in Cost.py')
+            raise Exception('Unkown type ' + group + 'in Cost.py')
 
         self.__parameters = feed_dict
         self.__group = group

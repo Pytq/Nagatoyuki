@@ -82,32 +82,11 @@ class Slice:
     def __quick_check_slices(self, group):
         if group == 'Lpack':
             for i in range(self.nb_slices):
-                if self.__slices['train'][i]['right'] <= self.__slices['test'][i]['left'] or self.__slices['train'][i]['left'] >= self.__slices['test'][i]['right']:
-                    if self.__slices['train'][i]['name'] != 'train_'+str(i) or self.__slices['test'][i]['name'] != 'test_'+str(i):
-                        print('slice error')
+                if self.__slices['train'][i]['right'] <= self.__slices['test'][i]['left'] \
+                                            or self.__slices['train'][i]['left'] >= self.__slices['test'][i]['right']:
+                    for test_train in ['test', 'train']:
+                        if self.__slices[test_train][i]['name'] != test_train + '_' + str(i):
+                            raise Exception('Slice number {} error: expected {}, but name is {}'
+                                            .format(i, test_train + '_' + str(i), self.__slices['train'][i]['name']))
                 else:
-                    print('overlapping train and test')
-
-
-
-                
-            
-
-        
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
+                    raise Exception('Overlapping train and test')

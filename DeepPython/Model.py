@@ -3,8 +3,10 @@ import ToolBox
 
 
 class Model:
-    def __init__(self, data_dict=None, targets=['res'], customizator=None):
+    def __init__(self, data_dict=None, targets=None, customizator=None):
 
+        if targets is None:
+            targets = ['res']
         if customizator is None:
             customizator = {}
         self.customizator = customizator
@@ -52,7 +54,7 @@ class Model:
     def finish_init(self):
         # Create the session
         self.init_all = tf.global_variables_initializer()
-        print('Model created. ' + str(ToolBox.nb_tf_op()) + ' nodes in tf.Graph')
+        print('Model created. {} nodes in tf.Graph'.format(ToolBox.nb_tf_op()))
         self.new_session()
 
     def add_cost(self, cost, trainable=False):
@@ -88,7 +90,7 @@ class Model:
         return self.session.run(x, feed_dict=self.dictparam)
 
     def close(self):
-        print('Session closed with ' + str(ToolBox.nb_tf_op()) + ' nodes in tf.Graph')
+        print('Session closed with {} nodes in tf.Graph'.format(ToolBox.nb_tf_op()))
         self.session.close()
 
     def meta_params(self):
@@ -104,7 +106,7 @@ class Model:
         return []
 
     def get_prediction(self, s, target):
-        return None
+        raise NotImplementedError
 
     def get_regularizer(self):
         return tf.constant(0.)
