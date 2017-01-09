@@ -4,6 +4,7 @@ import Params
 import tensorflow as tf
 import csv
 import math
+import Costs
 
 class Launch:
     def __init__(self, data, model, algogen=None):
@@ -14,17 +15,19 @@ class Launch:
         self.tf_operations = [] 
         self.session = None
 
-    def Go(self): 
+    def Go(self):
 
-        self.model.define_logloss(regularized=False, trainable=False)
-        self.model.define_logloss(regularized=True, trainable=True)
+        ll_res = Costs.Cost('logloss', feed_dict={'target': 'res', 'feature_dim': 1, 'regularized': False})
+        rll_res = Costs.Cost('logloss', feed_dict={'target': 'res', 'feature_dim': 1, 'regularized': True})
+        self.model.add_cost(ll_res, trainable=False)
+        self.model.add_cost(rll_res, trainable=True)
         self.model.finish_init()
         
         # self.model.set_params(Params.paramStd)
         ll_mean = 0.
         lls_mean = 0.
 
-        TYPE_SLICE = 'Lpack'
+        TYPE_SLICE = 'Shuffle'
         self.data.init_slices(TYPE_SLICE, feed_dict={'p_train': 0.5})
 
         with open(Params.OUTPUT, 'w') as csvfile:

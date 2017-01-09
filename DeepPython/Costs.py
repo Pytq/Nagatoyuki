@@ -2,28 +2,58 @@ import tensorflow as tf
 
 
 class Cost:
-    def __init__(self, name='untitled'):
+
+    def __init__(self, group, name=None, feed_dict=None):
+        if feed_dict is None:
+            feed_dict = {}
+
+        self.switcher = {
+            'empty': self.__init_empty,
+            'logloss': self.__init_logloss
+        }
+
+        if group not in self.switcher:
+            raise ('Unkown type ' + group + 'in Cost.py')
+
+        self.__parameters = feed_dict
+        self.__group = group
         self.name = name
         self.cost = None
 
-    def define_logloss(self, target, feature_dim, regularized=False):
+        self.switcher[self.__group]()
+
+    def __add__(self, other):
+        return self.__apply(other, lambda x, y: x + y)
+
+    def __radd__(self, other):
+        return self.__add__(other)
+
+    def __mul__(self, other):
+        self.__apply(other, lambda x, y: x * y)
+
+    def __rmul__(self, other):
+        return self.__mul__(other)
+
+    def __init_empty(self):
+        pass
+
+    def __init_logloss(self):
         if self.name is None:
-            self.name = 'll_' + target
-            if regularized:
+            self.name = 'll_' + self.__parameters['target']
+            if self.__parameters['regularized']:
                 self.name = 'r' + self.name
-        logloss = lambda model: self.cost_logloss(model.prediction[target], model.current_slice[target], feature_dim)
-        if regularized:
-            self.cost = lambda model: logloss(model) + model.regulizer
-        else:
-            self.cost = logloss
+        self.cost = self.__cost_logloss
 
-    def cost_logloss(self, prediction, target, feature_dim):
-        reduction_indices = [i + 1 for i in range(feature_dim)]
-        probabilities = prediction * target
+    def __cost_logloss(self, m):
+        reduction_indices = [i + 1 for i in range(self.__parameters['feature_dim'])]
+        probabilities = m.prediction[self.__parameters['target']] * m.current_slice[self.__parameters['target']]
         probabilities = tf.reduce_sum(probabilities, reduction_indices=reduction_indices)
-        return tf.reduce_mean(-tf.log(probabilities + 1e-9))
+        if self.__parameters['regularized']:
+            return tf.reduce_mean(-tf.log(probabilities + 1e-9))
+        else:
+            return tf.reduce_mean(-tf.log(probabilities + 1e-9)) + m.regulizer
 
-    def apply(self, other, fun):
+    def __apply(self, other, fun):
         result = Cost()
         if type(other) in [type(0), type(0.)]:
             result.name = self.name + '+' + str(other)
@@ -32,21 +62,3 @@ class Cost:
             result.name = self.name + '+' + other.name
             result.cost = lambda m: fun(self.cost(m), other.cost(m))
         return result
-
-    def __add__(self, other):
-        return self.apply(other, lambda x, y: x + y)
-
-    def __radd__(self, other):
-        return self.__add__(other)
-
-    def __mul__(self, other):
-        self.apply(other, lambda x, y: x * y)
-
-    def __rmul__(self, other):
-        return self.__mul__(other)
-
-    def get(self, s):
-        return self.costs[s]
-
-
-
