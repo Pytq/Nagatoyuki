@@ -89,7 +89,7 @@ class Data:
         for key in s:
             check_len.append(len(s[key]))
         if check_len[1:] != check_len[:-1]:
-            raise 'Data.py check_len'
+            raise Exception('Data.py check_len')
 
     @staticmethod
     def is_empty(s):
@@ -99,7 +99,7 @@ class Data:
     def add_header_to_data(row, header):
         d = {}
         if len(row) != len(header):
-            raise 'Data.py associate_data_to_header()'
+            raise Exception('Data.py associate_data_to_header()')
         for i in range(len(row)):
             d[header[i].replace(" ", "")] = row[i]
         Data.format_row(d)

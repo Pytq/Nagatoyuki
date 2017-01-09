@@ -5,17 +5,15 @@ import csv
 import math
 import Costs
 
+
 class Launch:
-    def __init__(self, data, model, algogen=None):
-        
+    def __init__(self, data, model):
         self.data = data
         self.model = model
-        self.algogen = algogen
-        self.tf_operations = [] 
+        self.tf_operations = []
         self.session = None
 
     def Go(self):
-
         ll_res = Costs.Cost('logloss', feed_dict={'target': 'res', 'feature_dim': 1, 'regularized': False})
         rll_res = Costs.Cost('logloss', feed_dict={'target': 'res', 'feature_dim': 1, 'regularized': True})
         self.model.add_cost(ll_res, trainable=False)
