@@ -4,3 +4,9 @@ c:\users\merlin\documents\visual studio 2015\Projects\MergerAndDataFilter\Merger
 c:\users\merlin\documents\visual studio 2015\Projects\MergerAndDataFilter\MergerAndDataFilter\obj\Debug\MergerAndDataFilter.csprojResolveAssemblyReference.cache
 c:\users\merlin\documents\visual studio 2015\Projects\MergerAndDataFilter\MergerAndDataFilter\obj\Debug\MergerAndDataFilter.exe
 c:\users\merlin\documents\visual studio 2015\Projects\MergerAndDataFilter\MergerAndDataFilter\obj\Debug\MergerAndDataFilter.pdb
+C:\Nagatoyuki\Datas\DataCodeCSharp\MergerAndDataFilter\MergerAndDataFilter\bin\Debug\MergerAndDataFilter.exe.config
+C:\Nagatoyuki\Datas\DataCodeCSharp\MergerAndDataFilter\MergerAndDataFilter\obj\Debug\MergerAndDataFilter.exe
+C:\Nagatoyuki\Datas\DataCodeCSharp\MergerAndDataFilter\MergerAndDataFilter\obj\Debug\MergerAndDataFilter.pdb
+C:\Nagatoyuki\Datas\DataCodeCSharp\MergerAndDataFilter\MergerAndDataFilter\bin\Debug\MergerAndDataFilter.exe
+C:\Nagatoyuki\Datas\DataCodeCSharp\MergerAndDataFilter\MergerAndDataFilter\bin\Debug\MergerAndDataFilter.pdb
+C:\Nagatoyuki\Datas\DataCodeCSharp\MergerAndDataFilter\MergerAndDataFilter\obj\Debug\MergerAndDataFilter.csprojResolveAssemblyReference.cache

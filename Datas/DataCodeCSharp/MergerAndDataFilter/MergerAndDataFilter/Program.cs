@@ -14,10 +14,11 @@ namespace MergerAndDataFilter
         static void Main(string[] args)
         {
             Dictionary<string, int[]> dictOfCountry = new Dictionary<string, int[]>() {
-                { "E0", new int[] { 0, 23 } },
-                { "E1", new int[] { 0, 23 } }, { "E2", new int[] { 0, 23 } }, { "E3", new int[] { 0, 23 } }, { "EC", new int[] { 0, 11 } },
 
-             { "SC0", new int[] { 0, 22 } }, { "SC1", new int[] { 0, 22 } }, { "SC2", new int[] { 0, 19 } }, { "SC3", new int[] { 0, 19 } },
+            { "E0", new int[] { 0, 23 } },
+            { "E1", new int[] { 0, 23 } }, { "E2", new int[] { 0, 23 } }, { "E3", new int[] { 0, 23 } }, { "EC", new int[] { 0, 11 } },
+
+            { "SC0", new int[] { 0, 22 } }, { "SC1", new int[] { 0, 22 } }, { "SC2", new int[] { 0, 19 } }, { "SC3", new int[] { 0, 19 } },
 
             { "D1", new int[] { 0, 23 } }, { "D2", new int[] { 0, 23 } },
 
@@ -57,6 +58,11 @@ namespace MergerAndDataFilter
 
                 List<string[]> list = new List<string[]>();
 
+                dic.Add("Div", j);
+                j++;
+                dic.Add("Season", j);
+                j++;
+
                 for (int i = dictKV.Value[0]; i < dictKV.Value[1]+1; i++)
                 {
                     if (i == dictKV.Value[0])
@@ -82,7 +88,11 @@ namespace MergerAndDataFilter
                     {
                         if (c != 0)
                         {
+                            
+
                             list.Add(new string[124]);
+                            list[numberofline][dic["Season"]] = (2017 - i).ToString();
+
                             int stringcount = 0;
                             foreach (string s in line.Split(','))
                             {
