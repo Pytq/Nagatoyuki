@@ -15,7 +15,7 @@ class Metaopti:
             self.__params[key] = 0.
             self.__paramrange[key] = 0.5
         self.__reset = reset
-        self.__custumizator = {'k': 5, 'alpha': 0.8, 'treshold': 0.001}
+        self.__custumizator = {'k': 5, 'alpha': 0.8, 'treshold': 0.005}
         for key in customizator:
             self.__custumizator[key] = customizator[key]
 
@@ -23,13 +23,14 @@ class Metaopti:
         self.__reset()
         x = copy(self.__params)
         for key in self.__params:
+            print(key)
             prange = 0
             for sign in [-1., 1.]:
                 x[key] = 0.
                 i = float("inf")
                 j = float("inf")
                 z = self.__fun(x)
-                while (z < j or j < i) and abs(x[key]) < 10**8:
+                while (z + self.__custumizator['treshold'] < j or j + self.__custumizator['treshold'] < i) and abs(x[key]) < 10**8:
                     i = j
                     j = z
                     x[key] = x[key] * 2. + sign
@@ -54,7 +55,6 @@ class Metaopti:
             y_min = float("inf")
             y_max = -float("inf")
             x_min = x[key]
-            y_start = self.__fun(self.__params)
             for k in range(self.__custumizator['k']):
                 x[key] = self.__params[key] + self.__paramrange[key] * (float(k) / (self.__custumizator['k'] - 1.) - 0.5)
                 y = self.__fun(x)
@@ -69,7 +69,7 @@ class Metaopti:
             if y_max - y_min < self.__custumizator['treshold']:
                 self.to_optimize.remove(key)
         current_value = self.__fun(self.__params)
-        return start_value - current_value, current_value
+        return start_value - current_value, current_value, start_value
 
 
 # class MetaOptiDiffEvo:

@@ -8,7 +8,7 @@ import tensorflow as tf
 
 FILE = '../Datas/DataClean/ResultWithOdds2.txt'
 OUTPUT = '../Output/output'
-NB_LOOPS = 2
+NB_LOOPS = 30
 
 CHECK_SLICE_OVERLAP = False
 MAX_GOALS = 9
