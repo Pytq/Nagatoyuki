@@ -4,18 +4,21 @@ import ToolBox
 
 
 class Metaopti:
-    def __init__(self, fun, params, reset, customizator=None):
+    def __init__(self, fun, params, to_optimize, reset, customizator=None):
         if customizator is None:
             customizator = {}
         self.__fun = fun
         self.__params = {}
-        self.to_optimize = params
+        self.to_optimize = to_optimize
         self.__paramrange = {}
         for key in params:
-            self.__params[key] = 0.
+            if key in self.to_optimize:
+                self.__params[key] = 0.
+            else:
+                self.__params[key] = -5.
             self.__paramrange[key] = 0.5
         self.__reset = reset
-        self.__custumizator = {'k': 5, 'alpha': 0.8, 'treshold': 0.005}
+        self.__custumizator = {'k': 5, 'alpha': 0.7, 'treshold': 0.005}
         for key in customizator:
             self.__custumizator[key] = customizator[key]
 

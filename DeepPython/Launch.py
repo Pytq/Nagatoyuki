@@ -85,11 +85,12 @@ class Launch:
         return res  # self.model.get_cost('ll_res')
 
     def grid_search(self):
-        self.data.init_slices('Shuffle', feed_dict={'p_train': 0.1})
+        self.data.init_slices('Shuffle', feed_dict={'p_train': 0.5})
         fun = self.target_loss
+        to_optimize = ['metaparamj2', 'metaparam2', 'bais_ext', 'draw_elo']
         metaparams = self.model.meta_params()
         reset = lambda: self.data.shuffle_slice('Shuffle')
-        optimizer = Metaopti.Metaopti(fun, metaparams, reset)
+        optimizer = Metaopti.Metaopti(fun, metaparams, to_optimize, reset)
         optimizer.init_paramrange()
         while optimizer.to_optimize:
             print(optimizer.opti_step())
