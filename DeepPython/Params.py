@@ -11,16 +11,11 @@ OUTPUT = '../Output/output'
 NB_LOOPS = 60
 
 CHECK_SLICE_OVERLAP = False
+MAX_GOALS = 9
 
-#UNUSED
+# UNUSED
 DATA_TYPE = tf.float32
-MAX_SEED = int(1e16)
 
-#Relative to modelSTD
-data2_nb_teams = 159
-data2_nb_saisons = 14
-data2_nb_max_journee = 38
-data2_nb_journee = (data2_nb_saisons + 1) * data2_nb_max_journee
 
 paramStd = {
     'metaparamj2': 7.596735999999996,
@@ -33,3 +28,8 @@ paramStd = {
     'draw_elo': -0.4084012199999998
 }
 
+# Relative to modelSTD
+# data2_nb_teams = 159
+# data2_nb_saisons = 14
+# data2_nb_max_journee = 38
+# data2_nb_journee = (data2_nb_saisons + 1) * data2_nb_max_journee
