@@ -17,6 +17,7 @@ class Slice:
         }
 
         if group not in self.switcher:
+            print(group)
             raise('Unkown type ' + group)
 
         self.__group = group

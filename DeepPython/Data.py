@@ -64,6 +64,8 @@ class Data:
         return self.__slices[group].nb_slices
 
     def shuffle_slice(self, group):
+        if group not in self.__slices:
+            self.init_slices(group)
         self.__slices[group].shuffle_slice()
 
     def __get_datas(self, filename):

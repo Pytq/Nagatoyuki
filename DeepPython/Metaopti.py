@@ -1,13 +1,15 @@
 import random
 from copy import copy
+import ToolBox
 
 
-class MetaOpti:
+class Metaopti:
     def __init__(self, fun, params, reset, customizator=None):
         if customizator is None:
             customizator = {}
         self.__fun = fun
         self.__params = {}
+        self.to_optimize = params
         self.__paramrange = {}
         for key in params:
             self.__params[key] = 0.
@@ -27,7 +29,7 @@ class MetaOpti:
                 i = float("inf")
                 j = float("inf")
                 z = self.__fun(x)
-                while (z <= j or j <= i) and abs(x[key]) < 10**8:
+                while (z < j or j < i) and abs(x[key]) < 10**8:
                     i = j
                     j = z
                     x[key] = x[key] * 2. + sign
@@ -44,12 +46,13 @@ class MetaOpti:
 
     def opti_step(self):
         x = copy(self.__params)
-        keys = random.shuffle(self.__params.keys())
+        keys = ToolBox.sample(self.to_optimize)
         self.__reset()
         start_value = self.__fun(self.__params)
         while keys:
             key = keys.pop()
             y_min = float("inf")
+            y_max = -float("inf")
             x_min = x[key]
             y_start = self.__fun(self.__params)
             for k in range(self.__custumizator['k']):
@@ -58,10 +61,13 @@ class MetaOpti:
                 if y < y_min:
                     y_min = y
                     x_min = x[key]
+                if y > y_max:
+                    y_max = y
             self.__paramrange[key] *= self.__custumizator['alpha']
             self.__params[key] = x_min
-            if y_start - y_min < self.__custumizator['treshold']:
-                del self.__params[key]
+            x[key] = x_min
+            if y_max - y_min < self.__custumizator['treshold']:
+                self.to_optimize.remove(key)
         current_value = self.__fun(self.__params)
         return start_value - current_value, current_value
 

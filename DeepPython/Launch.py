@@ -4,7 +4,7 @@ import Params
 import csv
 import math
 import Costs
-
+import Metaopti
 
 class Launch:
     def __init__(self, data, model):
@@ -13,14 +13,15 @@ class Launch:
         self.tf_operations = []
         self.session = None
 
-    def Go(self):
+    def init_model(self):
         ll_res = Costs.Cost('logloss', feed_dict={'target': 'res', 'feature_dim': 1, 'regularized': False})
         rll_res = Costs.Cost('logloss', feed_dict={'target': 'res', 'feature_dim': 1, 'regularized': True})
         self.model.add_cost(ll_res, trainable=False)
         self.model.add_cost(rll_res, trainable=True)
         self.model.finish_init()
 
-        # self.model.set_params(Params.paramStd)
+    def go(self):
+        self.model.set_params(Params.paramStd)
         ll_mean = 0.
         lls_mean = 0.
 
@@ -69,6 +70,25 @@ class Launch:
         print('Std_Dev: {}'.format(std_dev))
 
         self.model.close()
+
+    def target_loss(self, params):
+        self.model.set_params(params)
+        s_train, s_test = self.data.get_both_slices('Shuffle', train_p={'when_odd': False}, test_p={'when_odd': True})
+        self.set_current_slice(s_train)
+        self.model.train('rll_res', Params.NB_LOOPS)
+        res = self.model.get_cost('ll_res')
+        print(res, params)
+        return res  # self.model.get_cost('ll_res')
+
+    def grid_search(self):
+        self.data.init_slices('Shuffle', feed_dict={'p_train': 0.1})
+        fun = self.target_loss
+        metaparams = self.model.meta_params()
+        reset = lambda: self.data.shuffle_slice('Shuffle')
+        optimizer = Metaopti.Metaopti(fun, metaparams, reset)
+        optimizer.init_paramrange()
+        while optimizer.to_optimize:
+            print(optimizer.opti_step())
 
     def set_current_slice(self, s): 
         feed_dict = {}

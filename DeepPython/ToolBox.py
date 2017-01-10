@@ -1,5 +1,6 @@
 import tensorflow as tf
 import datetime
+import random
 
 ELOCONST = -1.
 
@@ -113,6 +114,8 @@ def get_elomatch(team, time, elo):
     return elomatch
 
 
+def sample(l):
+    return random.sample(l,len(l))
 def last_vector(n):
     res = [0.] * n
     res[n-1] = 1.
