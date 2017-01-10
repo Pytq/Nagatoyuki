@@ -72,7 +72,7 @@ class Launch:
         self.model.close()
 
     def target_loss(self, params):
-        self.model.reset()
+        self.model.session.run(self.model.init_all)
         self.model.set_params(params)
         s_train, s_test = self.data.get_both_slices('Shuffle', train_p={'when_odd': False}, test_p={'when_odd': True})
         self.set_current_slice(s_train)
