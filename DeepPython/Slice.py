@@ -22,6 +22,7 @@ class Slice:
         self.__group = group
         self.__parameters = feed_dict
         self.__slices = {}
+        self.__nb_matches = len(py_datas)
 
         self.nb_slices = 0
 
@@ -76,8 +77,12 @@ class Slice:
         else:
             return random.sample(l, n)[int(n * self.__parameters['p_train']):]
 
-    def __check_slices(self):
-        pass
+    def check_slices(self, train_p, test_p):
+        datas = range(self.__nb_matches)
+        train = self.get_slice(train_p)(datas)
+        test = self.get_slice(test_p)(datas)
+        if set(train) & set(test):
+            raise 'overlapping test and train'
 
     def __quick_check_slices(self, group):
         if group == 'Lpack':

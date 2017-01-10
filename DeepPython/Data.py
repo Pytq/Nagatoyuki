@@ -48,6 +48,18 @@ class Data:
             s = s2
         return s
 
+    def get_both_slices(self, group, train_p=None, test_p=None):
+        if train_p is None:
+            train_p = {}
+        if test_p is None:
+            test_p = {}
+        train_p['label'] = 'train'
+        test_p['label'] = 'test'
+        self.__slices[group].check_slices(train_p, test_p)
+        train = self.get_slice(group, train_p)
+        test = self.get_slice(group, test_p)
+        return train, test
+
     def nb_slices(self, group):
         return self.__slices[group].nb_slices
 

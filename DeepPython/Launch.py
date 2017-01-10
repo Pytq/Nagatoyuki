@@ -35,9 +35,12 @@ class Launch:
                 t = time.time()
                 self.model.reset()
 
-                slice_train = self.data.get_slice(TYPE_SLICE, feed_dict={'index': i, 'label': 'train', 'when_odd': False})
-                slice_test = self.data.get_slice(TYPE_SLICE, feed_dict={'index': i, 'label': 'test', 'when_odd': True})
-                
+                train_p = {'index': i, 'when_odd': False}
+                test_p = {'index': i, 'when_odd': True}
+                slice_train, slice_test = self.data.get_both_slices(TYPE_SLICE, train_p=train_p, test_p=test_p)
+                # slice_train = self.data.get_slice(TYPE_SLICE, feed_dict=train_p)
+                # slice_test = self.data.get_slice(TYPE_SLICE, feed_dict=test_p)
+
                 if not (self.data.is_empty(slice_train) or self.data.is_empty(slice_test)):
                     if self.model.is_trainable():
                         self.set_current_slice(slice_train)
