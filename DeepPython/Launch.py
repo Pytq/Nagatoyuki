@@ -93,6 +93,7 @@ class Launch:
         optimizer.init_paramrange()
         while optimizer.to_optimize:
             print(optimizer.opti_step())
+            print(optimizer.to_optimize)
 
     def set_current_slice(self, s): 
         feed_dict = {}

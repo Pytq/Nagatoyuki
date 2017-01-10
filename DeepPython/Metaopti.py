@@ -20,26 +20,30 @@ class Metaopti:
             self.__custumizator[key] = customizator[key]
 
     def init_paramrange(self):
-        self.__reset()
-        x = copy(self.__params)
-        for key in self.__params:
-            print(key)
-            prange = 0
-            for sign in [-1., 1.]:
-                x[key] = 0.
-                i = float("inf")
-                j = float("inf")
-                z = self.__fun(x)
-                while (z + self.__custumizator['treshold'] < j or j + self.__custumizator['treshold'] < i) and abs(x[key]) < 10**8:
-                    i = j
-                    j = z
-                    x[key] = x[key] * 2. + sign
-                    z = self.__fun(x)
-                if x[key] >= 10**8:
-                    raise 'out of range'
-                prange = max(prange, abs(x[key]))
-            self.__paramrange[key] = prange
-            x[key] = 0.
+        for key in self.__paramrange:
+            self.__paramrange[key] = 20.
+
+    # def init_paramrange(self):
+    #     self.__reset()
+    #     x = copy(self.__params)
+    #     for key in self.__params:
+    #         print(key)
+    #         prange = 0
+    #         for sign in [-1., 1.]:
+    #             x[key] = 0.
+    #             i = float("inf")
+    #             j = float("inf")
+    #             z = self.__fun(x)
+    #             while (z + self.__custumizator['treshold'] < j or j + self.__custumizator['treshold'] < i) and abs(x[key]) < 10**8:
+    #                 i = j
+    #                 j = z
+    #                 x[key] = x[key] * 2. + sign
+    #                 z = self.__fun(x)
+    #             if x[key] >= 10**8:
+    #                 raise 'out of range'
+    #             prange = max(prange, abs(x[key]))
+    #         self.__paramrange[key] = prange
+    #         x[key] = 0.
 
     def map_paramrange(self, mapper):
         for key in self.__paramrange:
@@ -48,10 +52,12 @@ class Metaopti:
     def opti_step(self):
         x = copy(self.__params)
         keys = ToolBox.sample(self.to_optimize)
+        print(self.to_optimize)
         self.__reset()
         start_value = self.__fun(self.__params)
         while keys:
             key = keys.pop()
+            print(key)
             y_min = float("inf")
             y_max = -float("inf")
             x_min = x[key]
