@@ -1,0 +1,6 @@
+c:\users\merlin\documents\visual studio 2015\Projects\MergerAndDataFilter\MergerAndDataFilter\bin\Debug\MergerAndDataFilter.exe.config
+c:\users\merlin\documents\visual studio 2015\Projects\MergerAndDataFilter\MergerAndDataFilter\bin\Debug\MergerAndDataFilter.exe
+c:\users\merlin\documents\visual studio 2015\Projects\MergerAndDataFilter\MergerAndDataFilter\bin\Debug\MergerAndDataFilter.pdb
+c:\users\merlin\documents\visual studio 2015\Projects\MergerAndDataFilter\MergerAndDataFilter\obj\Debug\MergerAndDataFilter.csprojResolveAssemblyReference.cache
+c:\users\merlin\documents\visual studio 2015\Projects\MergerAndDataFilter\MergerAndDataFilter\obj\Debug\MergerAndDataFilter.exe
+c:\users\merlin\documents\visual studio 2015\Projects\MergerAndDataFilter\MergerAndDataFilter\obj\Debug\MergerAndDataFilter.pdb
