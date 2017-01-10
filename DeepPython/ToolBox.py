@@ -15,11 +15,6 @@ def kron(i_, j_):
     else:
         return 0.
 
-
-def timediff_gen(nb_times):
-    return tf.constant([[kron(i, j)-kron(j, i-1) for j in range(nb_times - 1)] for i in range(nb_times)])
-
-
 def first_time(nb_times):
     first_time_python = [[0.] for i in range(nb_times)]
     first_time_python[0] = [1.]
@@ -98,6 +93,10 @@ def get_raw_elo_cost(metaparam0, metaparam1, elo, nb_times):
             return cost1 + cost2
 
 
+def timediff_gen(nb_times):
+    return tf.constant([[kron(i, j)-kron(j, i-1) for j in range(nb_times - 1)] for i in range(nb_times)])
+
+
 def get_timediff_elo_cost(metaparam, elo, nb_times):
     timediff = timediff_gen(nb_times)
     if nb_times > 1:
@@ -116,6 +115,7 @@ def get_elomatch(team, time, elo):
 
 def sample(l):
     return random.sample(l,len(l))
+
 def last_vector(n):
     res = [0.] * n
     res[n-1] = 1.

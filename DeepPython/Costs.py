@@ -45,16 +45,16 @@ class Cost:
             self.name = 'll_' + self.__parameters['target']
             if self.__parameters['regularized']:
                 self.name = 'r' + self.name
-        self.__cost = self.__cost_logloss
+        self.__cost = lambda model: self.__cost_logloss(model)
 
     def __cost_logloss(self, m):
         reduction_indices = [i + 1 for i in range(self.__parameters['feature_dim'])]
         probabilities = m.prediction[self.__parameters['target']] * m.current_slice[self.__parameters['target']]
         probabilities = tf.reduce_sum(probabilities, reduction_indices=reduction_indices)
         if self.__parameters['regularized']:
-            return tf.reduce_mean(-tf.log(probabilities + 1e-9))
-        else:
             return tf.reduce_mean(-tf.log(probabilities + 1e-9)) + m.regulizer
+        else:
+            return tf.reduce_mean(-tf.log(probabilities + 1e-9))
 
     def __apply(self, other, fun):
         result = Cost()

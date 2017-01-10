@@ -62,6 +62,7 @@ class Model:
             print('cost already defined')
         else:
             self.costs[cost.name] = cost.get_cost(self)
+            # print(self.costs)
             if trainable and self.is_trainable():
                 self.train_step[cost.name] = tf.train.AdamOptimizer(0.01).minimize(self.costs[cost.name])
 
@@ -84,6 +85,7 @@ class Model:
             self.run(self.train_step[cost])
 
     def get_cost(self, cost):
+        # print(cost, self.costs[cost])
         return self.run(self.costs[cost])
 
     def run(self, x):

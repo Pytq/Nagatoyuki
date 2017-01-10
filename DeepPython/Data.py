@@ -110,7 +110,7 @@ class Data:
             self.__datas['odds'].append([dict_row["BbMxH"], dict_row["BbMxD"], dict_row["BbMxA"]])
             self.__datas['saison'].append(ToolBox.make_vector(dict_row["saison"]-self.meta_datas['min_saison'], self.meta_datas['nb_saisons']))
             self.__datas['team_h'].append(ToolBox.make_vector(dict_row["id1"], self.meta_datas["nb_teams"]))
-            self.__datas['team_a'].append(ToolBox.make_vector(dict_row["id1"], self.meta_datas["nb_teams"]))
+            self.__datas['team_a'].append(ToolBox.make_vector(dict_row["id2"], self.meta_datas["nb_teams"]))
             score_team_h = min(int(dict_row["score1"]), Params.MAX_GOALS)
             score_team_a = min(int(dict_row["score2"]), Params.MAX_GOALS)
             self.__datas['score_h'].append(ToolBox.make_vector(score_team_h, Params.MAX_GOALS+1))
