@@ -11,6 +11,7 @@ OUTPUT = '../Output/output'
 NB_LOOPS = 60
 
 CHECK_SLICE_OVERLAP = False
+MAX_GOALS = 9
 
 #UNUSED
 DATA_TYPE = tf.float32
@@ -30,6 +31,6 @@ paramStd = {
     'metaparam1': -10.2545,
     'metaparam0': -11.799499999999998,
     'bais_ext': 0.5396204199999999,
-    'draw_elo': -0.4084012199999998
+    'draw_elo': -0.4084012199999998,
 }
 

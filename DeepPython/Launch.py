@@ -40,7 +40,7 @@ class Launch:
 
                 train_p = {'when_odd': False}
                 test_p = {'when_odd': True}
-                slice_train, slice_test = self.data.cget_both_slices(TYPE_SLICE, train_p=train_p, test_p=test_p)
+                slice_train, slice_test = self.data.cget_both_slices(self.type_slice, train_p=train_p, test_p=test_p)
 
                 if not (self.data.is_empty(slice_train) or self.data.is_empty(slice_test)):
                     if self.display <= 1:
