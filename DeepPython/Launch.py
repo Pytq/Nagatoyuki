@@ -23,7 +23,7 @@ class Launch:
         self.model.add_cost(ll_res, trainable=False)
         self.model.add_cost(rll_res, trainable=True)
         self.model.finish_init()
-        
+
         self.model.set_params(Params.paramStd)
         ll_mean = 0.
         lls_mean = 0.
@@ -33,14 +33,15 @@ class Launch:
 
         with open(Params.OUTPUT + '_' + now, 'w') as csvfile:
             spamwriter = csv.writer(csvfile, delimiter=',', quotechar='|', quoting=csv.QUOTE_MINIMAL)
-            nb_slices = self.data.nb_slices(self.type_slice)
+            nb_slices = self.data.nb_slices(self.type_slice) if self.type_slice != "Shuffle" else 10
             for i in range(nb_slices):
                 t = time.time()
                 self.model.reset()
 
-                slice_train = self.data.get_slice(self.type_slice, feed_dict={'index': i, 'label': 'train', 'when_odd': False})
-                slice_test = self.data.get_slice(self.type_slice, feed_dict={'index': i, 'label': 'test', 'when_odd': True})
-                
+                train_p = {'when_odd': False}
+                test_p = {'when_odd': True}
+                slice_train, slice_test = self.data.cget_both_slices(TYPE_SLICE, train_p=train_p, test_p=test_p)
+
                 if not (self.data.is_empty(slice_train) or self.data.is_empty(slice_test)):
                     if self.display <= 1:
                         print("Working on slice {} / {}".format(i+1, nb_slices))
@@ -74,6 +75,31 @@ class Launch:
             print('Mean: {} / Std_dev: {}'.format(str(mean_total)[:7], str(std_dev_total)[:7]))
 
         self.model.close()
+
+    def target_loss(self, params):
+        self.model.session.run(self.model.init_all)
+        self.model.set_params(params)
+        s_train, s_test = self.data.get_both_slices('Shuffle', train_p={'when_odd': False}, test_p={'when_odd': True})
+        self.set_current_slice(s_train)
+        self.model.train('rll_res', Params.NB_LOOPS)
+        self.set_current_slice(s_test)
+        res = self.model.get_cost('ll_res')
+        if math.isnan(res):
+            res = float('inf')
+        print(res, params)
+        return res  # self.model.get_cost('ll_res')
+
+    def grid_search(self):
+        self.data.init_slices('Shuffle', feed_dict={'p_train': 0.5})
+        fun = self.target_loss
+        to_optimize = ['metaparamj2', 'metaparam2', 'bais_ext', 'draw_elo']
+        metaparams = self.model.meta_params()
+        reset = lambda: self.data.next_slice('Shuffle')
+        optimizer = Metaopti.Metaopti(fun, metaparams, to_optimize, reset)
+        optimizer.init_paramrange()
+        while optimizer.to_optimize:
+            print(optimizer.opti_step())
+            print(optimizer.to_optimize)
 
     def set_current_slice(self, s): 
         feed_dict = {}

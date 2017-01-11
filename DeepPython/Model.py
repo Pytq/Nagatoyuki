@@ -98,7 +98,7 @@ class Model:
         raise NotImplementedError
 
     def linear_meta_params(self):
-        raise NotImplementedError
+        return []
 
     def define_parameters(self):
         return []
