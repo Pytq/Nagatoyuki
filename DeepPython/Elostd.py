@@ -29,7 +29,7 @@ class Elostd(M.Model):
             p_tie = 1. - p_los - p_win
             return tf.pack([p_win, p_tie, p_los], axis=1)
         else:
-            print(target + ' not implemented.')
+            raise Exception(target + ' not implemented.')
 
     def get_regularizer(self):
         regulizer_list = []
