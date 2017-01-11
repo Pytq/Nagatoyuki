@@ -14,7 +14,7 @@ model = Elostd.Elostd(data_dict=data.meta_datas, customizator={'normalized': Tru
 
 launch = Launch.Launch(data, model)
 launch.init_model()
-launch.grid_search()
+# launch.grid_search()
 launch.go()
 
 """

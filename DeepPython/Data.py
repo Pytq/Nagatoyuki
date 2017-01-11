@@ -27,12 +27,31 @@ class Data:
             feed_dict = {}
         self.__slices[group] = Slice.Slice(self.py_datas, group, feed_dict=feed_dict)
 
+    def next_slice(self, group):
+        self.__slices[group].next_slice()
+
     def get_slice(self, group, feed_dict=None):
+        fun = self.__slices[group].get_slice
+        return self.__get_slice(fun, group, feed_dict=feed_dict)
+
+    def cget_slice(self, group, feed_dict=None):
+        fun = self.__slices[group].cget_slice
+        return self.__get_slice(fun, group, feed_dict=feed_dict)
+
+    def get_both_slices(self, group, train_p=None, test_p=None):
+        fun = self.get_slice
+        return self.__get_both_slices(fun, group, train_p=train_p, test_p=test_p)
+
+    def cget_both_slices(self, group, train_p=None, test_p=None):
+        fun = self.cget_slice
+        return self.__get_both_slices(fun, group, train_p=train_p, test_p=test_p)
+
+    def __get_slice(self, fun, group, feed_dict=None):
         if feed_dict is None:
             feed_dict = {}
         if group not in self.__slices:
             self.init_slices(group)
-        extract_slice = self.__slices[group].get_slice(feed_dict)
+        extract_slice = fun(feed_dict)
         s = {}
         for key in self.__datas:
             s[key] = extract_slice(self.__datas[key])
@@ -48,7 +67,7 @@ class Data:
             s = s2
         return s
 
-    def get_both_slices(self, group, train_p=None, test_p=None):
+    def __get_both_slices(self, fun, group, train_p=None, test_p=None):
         if train_p is None:
             train_p = {}
         if test_p is None:
@@ -56,17 +75,17 @@ class Data:
         train_p['label'] = 'train'
         test_p['label'] = 'test'
         self.__slices[group].check_slices(train_p, test_p)
-        train = self.get_slice(group, train_p)
-        test = self.get_slice(group, test_p)
+        train = fun(group, train_p)
+        test = fun(group, test_p)
         return train, test
 
     def nb_slices(self, group):
         return self.__slices[group].nb_slices
 
-    def shuffle_slice(self, group):
-        if group not in self.__slices:
-            self.init_slices(group)
-        self.__slices[group].shuffle_slice()
+    # def shuffle_slice(self, group):
+    #     if group not in self.__slices:
+    #         self.init_slices(group)
+    #     self.__slices[group].shuffle_slice()
 
     def __get_datas(self, filename):
         self.meta_datas["nb_matchs"] = 0

@@ -11,9 +11,13 @@ class Slice:
 
         self.switcher = {
             'Lpack': {'init': self.__init_lpack,
-                      'get_slice': self.__get_slice_lpack},
+                      'get_slice': self.__get_slice_lpack,
+                      'next_slice': self.__next_slice_lpack,
+                      'cget_slice': self.__get_current_slice_lpack},
             'Shuffle': {'init': self.__init_shuffle,
-                        'get_slice': self.__get_slice_shuffle}
+                        'get_slice': self.__get_slice_shuffle,
+                        'next_slice': self.__shuffle_slice,
+                        'cget_slice': self.__get_slice_shuffle}
         }
 
         if group not in self.switcher:
@@ -32,11 +36,14 @@ class Slice:
         if Params.CHECK_SLICE_OVERLAP:
             self.__check_slices()
 
-    def shuffle_slice(self):
-        self.__slices['internal_seed'] = random.getrandbits(64)
-
     def get_slice(self, feed_dict):
         return lambda l: self.switcher[self.__group]['get_slice'](l, feed_dict)
+
+    def cget_slice(self, feed_dict):
+        return lambda l: self.switcher[self.__group]['cget_slice'](l, feed_dict)
+
+    def next_slice(self):
+        return self.switcher[self.__group]['next_slice']()
 
     def __init_lpack(self, py_datas):
         self.__slices = {'train': [], 'test': []}
@@ -60,12 +67,21 @@ class Slice:
             nb_matchs += 1
         self.nb_slices = min(len(self.__slices['test']), len(self.__slices['train']))
         self.__quick_check_slices(self.__group)
+        self.__slices['i'] = 0
 
     def __get_slice_lpack(self, l, feed_dict):
         left = self.__slices[feed_dict['label']][feed_dict['index']]['left']
         right = self.__slices[feed_dict['label']][feed_dict['index']]['right']
         return l[left:right]
 
+    def __get_current_slice_lpack(self, l, feed_dict):
+        feed_dict['index'] = self.__slices['i']
+        return self.__get_slice_lpack(l, feed_dict)
+
+    def __next_slice_lpack(self):
+        self.__slices['i'] += 1
+
+    #  Shuffle
     def __init_shuffle(self, _):
         self.nb_slices = 1
         self.__slices['internal_seed'] = random.getrandbits(64)
@@ -77,6 +93,9 @@ class Slice:
             return random.sample(l, n)[:int(n * self.__parameters['p_train'])]
         else:
             return random.sample(l, n)[int(n * self.__parameters['p_train']):]
+
+    def __shuffle_slice(self):
+        self.__slices['internal_seed'] = random.getrandbits(64)
 
     def check_slices(self, train_p, test_p):
         datas = range(self.__nb_matches)
