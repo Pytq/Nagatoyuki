@@ -13,7 +13,7 @@ class Elostd(M.Model):
     def features_data(self):
         return ['team_h', 'team_a', 'saison', 'journee', 'res']
 
-    def define_parmeters(self):
+    def define_parameters(self):
         self.param['elo'] = tf.Variable(tf.zeros([self.data_dict["nb_teams"], self.data_dict["nb_saisons"]]))
         self.param['elojournee'] = tf.Variable(tf.zeros([self.data_dict["nb_teams"], self.data_dict["nb_journee"]]))
 
