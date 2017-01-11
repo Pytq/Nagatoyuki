@@ -15,16 +15,20 @@ class Launch:
         self.session = None
         self.display = display
 
-    def execute(self):
-        if self.display <= 2:
-            print("Evaluating model")
+    def initialize(self):
         ll_res = Costs.Cost('logloss', feed_dict={'target': 'res', 'feature_dim': 1, 'regularized': False})
         rll_res = Costs.Cost('logloss', feed_dict={'target': 'res', 'feature_dim': 1, 'regularized': True})
         self.model.add_cost(ll_res, trainable=False)
         self.model.add_cost(rll_res, trainable=True)
         self.model.finish_init()
-
         self.model.set_params(Params.paramStd)
+
+    def execute(self):
+        if self.display <= 2:
+            print("Evaluating model")
+
+        self.initialize()
+
         ll_mean = 0.
         lls_mean = 0.
 
