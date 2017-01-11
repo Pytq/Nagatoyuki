@@ -14,6 +14,7 @@ class Launch:
         self.tf_operations = []
         self.session = None
         self.display = display
+        self.initialize()
 
     def initialize(self):
         ll_res = Costs.Cost('logloss', feed_dict={'target': 'res', 'feature_dim': 1, 'regularized': False})
@@ -26,8 +27,6 @@ class Launch:
     def execute(self):
         if self.display <= 2:
             print("Evaluating model")
-
-        self.initialize()
 
         ll_mean = 0.
         lls_mean = 0.
