@@ -1,84 +1,67 @@
 import random
 from copy import copy
-import ToolBox
 
 
-class Metaopti:
-    def __init__(self, fun, params, to_optimize, reset, customizator=None):
-        if customizator is None:
-            customizator = {}
-        self.__fun = fun
-        self.__params = {}
-        self.to_optimize = to_optimize
-        self.__paramrange = {}
+class MetaOpti:
+    def __init__(self, fun, params, reset, k=5, alpha=0.8, treshold=0.001):
+        self.fun = fun
+        self.params = {}
+        self.paramrange = {}
         for key in params:
-            if key in self.to_optimize:
-                self.__params[key] = 0.
-            else:
-                self.__params[key] = -5.
-            self.__paramrange[key] = 0.5
-        self.__reset = reset
-        self.__custumizator = {'k': 5, 'alpha': 0.7, 'treshold': 0.005}
-        for key in customizator:
-            self.__custumizator[key] = customizator[key]
+            self.params[key] = 0.
+            self.paramrange[key] = 0.5
+        self.reset = reset
+        self.k = k
+        self.alpha = alpha
+        self.treshold = treshold
 
     def init_paramrange(self):
-        for key in self.__paramrange:
-            self.__paramrange[key] = 20.
-
-    # def init_paramrange(self):
-    #     self.__reset()
-    #     x = copy(self.__params)
-    #     for key in self.__params:
-    #         print(key)
-    #         prange = 0
-    #         for sign in [-1., 1.]:
-    #             x[key] = 0.
-    #             i = float("inf")
-    #             j = float("inf")
-    #             z = self.__fun(x)
-    #             while (z + self.__custumizator['treshold'] < j or j + self.__custumizator['treshold'] < i) and abs(x[key]) < 10**8:
-    #                 i = j
-    #                 j = z
-    #                 x[key] = x[key] * 2. + sign
-    #                 z = self.__fun(x)
-    #             if x[key] >= 10**8:
-    #                 raise 'out of range'
-    #             prange = max(prange, abs(x[key]))
-    #         self.__paramrange[key] = prange
-    #         x[key] = 0.
+        self.reset()
+        x = copy(self.params)
+        for key in self.params:
+            prange = 0
+            for sign in [-1., 1.]:
+                x[key] = 0.
+                i = float("inf")
+                j = float("inf")
+                z = self.fun(x)
+                while (z <= j or j <= i) and abs(x[key]) < 10**8:
+                    i = j
+                    j = z
+                    x[key] = x[key] * 2. + sign
+                    z = self.fun(x)
+                if x[key] >= 10**8:
+                    raise Exception('Out of range')
+                prange = max(prange, abs(x[key]))
+            self.paramrange[key] = prange
+            x[key] = 0.
 
     def map_paramrange(self, mapper):
-        for key in self.__paramrange:
-            self.__paramrange[key] = mapper(self.__paramrange[key])
+        for key in self.paramrange:
+            self.paramrange[key] = mapper(self.paramrange[key])
 
     def opti_step(self):
-        x = copy(self.__params)
-        keys = ToolBox.sample(self.to_optimize)
-        print(self.to_optimize)
-        self.__reset()
-        start_value = self.__fun(self.__params)
+        x = copy(self.params)
+        keys = random.shuffle(self.params.keys())
+        self.reset()
+        start_value = self.fun(self.params)
         while keys:
             key = keys.pop()
-            print(key)
             y_min = float("inf")
-            y_max = -float("inf")
             x_min = x[key]
-            for k in range(self.__custumizator['k']):
-                x[key] = self.__params[key] + self.__paramrange[key] * (float(k) / (self.__custumizator['k'] - 1.) - 0.5)
-                y = self.__fun(x)
+            y_start = self.fun(self.params)
+            for k in range(self.k):
+                x[key] = self.params[key] + self.paramrange[key] * (float(k)/(self.k-1.) - 0.5)
+                y = self.fun(x)
                 if y < y_min:
                     y_min = y
                     x_min = x[key]
-                if y > y_max:
-                    y_max = y
-            self.__paramrange[key] *= self.__custumizator['alpha']
-            self.__params[key] = x_min
-            x[key] = x_min
-            if y_max - y_min < self.__custumizator['treshold']:
-                self.to_optimize.remove(key)
-        current_value = self.__fun(self.__params)
-        return start_value - current_value, current_value, start_value
+            self.paramrange[key] *= self.alpha
+            self.params[key] = x_min
+            if y_start - y_min < self.treshold:
+                del self.params[key]
+        current_value = self.fun(self.params)
+        return start_value - current_value, current_value
 
 
 # class MetaOptiDiffEvo:

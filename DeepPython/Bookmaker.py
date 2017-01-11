@@ -1,4 +1,4 @@
-import Model as M
+from DeepPython import Model as M
 import tensorflow as tf
 
 

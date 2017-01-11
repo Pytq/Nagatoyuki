@@ -1,5 +1,5 @@
 import tensorflow as tf
-import ToolBox
+from DeepPython import ToolBox
 
 
 class Model:
@@ -59,17 +59,14 @@ class Model:
 
     def add_cost(self, cost, trainable=False):
         if cost.name in self.costs:
-            print('cost already defined')
+            print('Cost with name {} is already defined'.format(cost.name))
         else:
             self.costs[cost.name] = cost.get_cost(self)
-            # print(self.costs)
             if trainable and self.is_trainable():
                 self.train_step[cost.name] = tf.train.AdamOptimizer(0.01).minimize(self.costs[cost.name])
 
     def set_params(self, param):
-        self.dictparam = {}
-        for key in param:
-            self.dictparam[self.ph_metaparam[key]] = param[key]
+        self.dictparam = {self.ph_metaparam[key]: value for key, value in param.items() if key in self.ph_metaparam}
 
     def reset(self):
         self.session.run(self.reset_op)
@@ -85,7 +82,6 @@ class Model:
             self.run(self.train_step[cost])
 
     def get_cost(self, cost):
-        # print(cost, self.costs[cost])
         return self.run(self.costs[cost])
 
     def run(self, x):

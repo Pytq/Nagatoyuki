@@ -1,6 +1,6 @@
 from copy import deepcopy
 import random
-import Params
+from DeepPython import Params
 
 
 class Slice:
@@ -21,8 +21,7 @@ class Slice:
         }
 
         if group not in self.switcher:
-            print(group)
-            raise('Unkown type ' + group)
+            raise('Unkown type {}, expected: {}'.format(group, list(self.switcher.keys())))
 
         self.__group = group
         self.__parameters = feed_dict

@@ -1,21 +1,18 @@
-import Data
-import Elostd
-import Launch
-import Params
 import sys
-import Bookmaker
+from DeepPython import Data, Bookmaker, Launch, Params, Elostd
+
 
 print(sys.version)
 
 
 data = Data.Data(Params.FILE)
 
+bookm = Bookmaker.Bookmaker(data_dict=data.meta_datas, customizator={'normalized': True})
 model = Elostd.Elostd(data_dict=data.meta_datas, customizator={'normalized': True})
 
-launch = Launch.Launch(data, model)
-launch.init_model()
-# launch.grid_search()
-launch.go()
+launch = Launch.Launch(data, model, bookm, 'Shuffle', display=1)
+
+launch.execute()
 
 """
 

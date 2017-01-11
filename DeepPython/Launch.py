@@ -1,47 +1,50 @@
 # -*- coding: utf-8 -*-
 import time
-import Params
 import csv
 import math
-import Costs
-import Metaopti
+from DeepPython import Params, Costs
+
 
 class Launch:
-    def __init__(self, data, model):
+    def __init__(self, data, model, bookmaker, type_slice, display=3):
         self.data = data
         self.model = model
+        self.bookmaker = bookmaker
+        self.type_slice = type_slice
         self.tf_operations = []
         self.session = None
+        self.display = display
 
-    def init_model(self):
+    def execute(self):
+        if self.display <= 2:
+            print("Evaluating model")
         ll_res = Costs.Cost('logloss', feed_dict={'target': 'res', 'feature_dim': 1, 'regularized': False})
         rll_res = Costs.Cost('logloss', feed_dict={'target': 'res', 'feature_dim': 1, 'regularized': True})
         self.model.add_cost(ll_res, trainable=False)
         self.model.add_cost(rll_res, trainable=True)
         self.model.finish_init()
 
-    def go(self):
         self.model.set_params(Params.paramStd)
         ll_mean = 0.
         lls_mean = 0.
 
-        TYPE_SLICE = 'Shuffle'
-        self.data.init_slices(TYPE_SLICE, feed_dict={'p_train': 0.5})
+        self.data.init_slices(self.type_slice, feed_dict={'p_train': 0.5})
+        now = time.strftime('%Y_%m_%d_%H_%M_%S')
 
-        with open(Params.OUTPUT, 'w') as csvfile:
+        with open(Params.OUTPUT + '_' + now, 'w') as csvfile:
             spamwriter = csv.writer(csvfile, delimiter=',', quotechar='|', quoting=csv.QUOTE_MINIMAL)
-            nb_iter = 10  # self.data.nb_slices(TYPE_SLICE))
-            for i in range(nb_iter):
+            nb_slices = self.data.nb_slices(self.type_slice) if self.type_slice != "Shuffle" else 10
+            for i in range(nb_slices):
                 t = time.time()
                 self.model.reset()
 
                 train_p = {'when_odd': False}
                 test_p = {'when_odd': True}
-                slice_train, slice_test = self.data.cget_both_slices(TYPE_SLICE, train_p=train_p, test_p=test_p)
-                # slice_train = self.data.get_slice(TYPE_SLICE, feed_dict=train_p)
-                # slice_test = self.data.get_slice(TYPE_SLICE, feed_dict=test_p)
+                slice_train, slice_test = self.data.cget_both_slices(self.type_slice, train_p=train_p, test_p=test_p)
 
                 if not (self.data.is_empty(slice_train) or self.data.is_empty(slice_test)):
+                    if self.display <= 1:
+                        print("Working on slice {} / {}".format(i+1, nb_slices))
                     if self.model.is_trainable():
                         self.set_current_slice(slice_train)
                         self.model.train('rll_res', Params.NB_LOOPS)
@@ -55,20 +58,21 @@ class Launch:
                     for key in keys:
                         datas[key] = slice_test[key]
                         if len(datas[key]) != len(prediction):
-                            raise 'ERROR'
+                            raise Exception('ERROR lengths do not match {} and {}'.format(len(datas[key]), len(prediction)))
                     for j in range(len(prediction)):
                         to_write = list(prediction[j]) + datas['odds'][j] + datas['res'][j]
-                        # print(to_write)
+                        if self.display <= 0:
+                            print(to_write)
                         spamwriter.writerow(to_write)
                     ll_mean += ll
-                    lls_mean += ll**2
-                    print("{0}/{1}: {2} (time: {3})".format(i+1, nb_iter, ll, time.time()-t))
-                self.data.next_slice(TYPE_SLICE)
+                    lls_mean += ll ** 2
+                    if self.display <= 1:
+                        print("Slice {}: cost {} computed in {} s.".format(i, str(ll)[:7], str(time.time() - t)[:4]))
 
-        mean = ll_mean/nb_iter
-        std_dev = math.sqrt(lls_mean/nb_iter - mean**2)
-        print('Mean:    {}'.format(mean))
-        print('Std_Dev: {}'.format(std_dev))
+        mean_total = ll_mean/self.data.nb_slices(self.type_slice)
+        std_dev_total = math.sqrt(lls_mean / nb_slices - (ll_mean / nb_slices) ** 2)
+        if self.display <= 2:
+            print('Mean: {} / Std_dev: {}'.format(str(mean_total)[:7], str(std_dev_total)[:7]))
 
         self.model.close()
 

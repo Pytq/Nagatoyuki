@@ -1,7 +1,5 @@
 import csv
-import ToolBox
-import Slice
-import Params
+from DeepPython import ToolBox, Params, Slice
 
 ALL_FEATURES = ['saison', 'team_h', 'team_a', 'res', 'score_h', 'score_a', 'journee',
                 'odd_win_h', 'odd_tie', 'odd_los_h', 'odds']
@@ -113,7 +111,7 @@ class Data:
                     self.py_datas.append(dict_row)
                     self.meta_datas["nb_matchs"] += 1
         if min_teamid != 0:
-            raise 'id error'
+            raise Exception('Id error : Min team id should be be 0 but is {}'.format(min_teamid))
         self.meta_datas["nb_teams"] = max_teamid + 1
         self.meta_datas["min_saison"] = min_saison
         self.meta_datas["nb_saisons"] = 1 + max_saison - min_saison
