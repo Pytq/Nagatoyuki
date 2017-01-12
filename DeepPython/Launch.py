@@ -30,7 +30,7 @@ class Launch:
 
     def execute(self):
         if self.display <= 2:
-            print("Evaluating Model vs Bookmaker")
+            print("Evaluating Models: {}".format(list(self.models)))
         print()
 
         evaluation = {x: {"prediction": None, "ll_sum": 0, "lls_sum": 0} for x in list(self.models) + ["Diff"]}
@@ -40,11 +40,16 @@ class Launch:
 
         with open(Params.OUTPUT + '_' + timeNow, 'w') as csvfile:
             spamwriter = csv.writer(csvfile, delimiter=',', quotechar='|', quoting=csv.QUOTE_MINIMAL)
-            nb_slices = self.data.nb_slices(self.type_slice) if self.type_slice != "Shuffle" else 3
+            nb_slices = self.data.nb_slices(self.type_slice) if self.type_slice != "Shuffle" else 2
+            train_p = {'when_odd': False}
+            test_p = {'when_odd': True}
             for i in range(nb_slices):
-                train_p = {'when_odd': False}
-                test_p = {'when_odd': True}
-                slice_train, slice_test = self.data.cget_both_slices(self.type_slice, train_p=train_p, test_p=test_p)
+                if i == 1 and self.type_slice == "Shuffle":
+                    slice_train, slice_test = slice_test, slice_train
+                    if self.display <= 1:
+                        print("Shuffle mode: test and train are swapped")
+                else:
+                    slice_train, slice_test = self.data.cget_both_slices(self.type_slice, train_p=train_p, test_p=test_p)
 
                 if not (self.data.is_empty(slice_train) or self.data.is_empty(slice_test)):
                     if self.display <= 1:
@@ -89,6 +94,8 @@ class Launch:
                                                                                 str(evaluation[key]["current_ll"])[:7],
                                                                                 str(evaluation[key]["time"])[:4]))
                 print()
+            for model in self.models.values():
+                model.close()
 
         for model_name in evaluation.keys():
             evaluation[model_name]["Mean"] = evaluation[model_name]["ll_sum"] / nb_slices
@@ -101,26 +108,26 @@ class Launch:
                                                             str(100*evaluation[model_name]["Mean"])[:7],
                                                             str(100*evaluation[model_name]["StdDev"])[:7]))
 
-        self.model.close()
-
-    def target_loss(self, params):
-        self.model.session.run(self.model.init_all)
-        self.model.set_params(params)
+    def target_loss(self, params, model_name):
+        model = self.models[model_name]
+        model.session.run(model.init_all)
+        model.set_params(params)
         s_train, s_test = self.data.get_both_slices('Shuffle', train_p={'when_odd': False}, test_p={'when_odd': True})
         self.set_current_slice(s_train)
-        self.model.train('rll_res', Params.NB_LOOPS)
-        self.set_current_slice(s_test)
-        res = self.model.get_cost('ll_res')
+        model.train('rll_res', Params.NB_LOOPS)
+        self.set_current_slice(s_test, model_name)
+        res = model.get_cost('ll_res')
         if math.isnan(res):
             res = float('inf')
-        print(res, params)
+        print(model_name, res, params)
         return res  # self.model.get_cost('ll_res')
 
-    def grid_search(self):
+    def grid_search(self, model_name):
+        model = self.models[model_name]
         self.data.init_slices('Shuffle', feed_dict={'p_train': 0.5})
-        fun = self.target_loss
+        fun = lambda params: self.target_loss(params, model_name)
         to_optimize = ['metaparamj2', 'metaparam2', 'bais_ext', 'draw_elo']
-        metaparams = self.model.meta_params()
+        metaparams = model.meta_params()
         reset = lambda: self.data.next_slice('Shuffle')
         optimizer = Metaopti.Metaopti(fun, metaparams, to_optimize, reset)
         optimizer.init_paramrange()

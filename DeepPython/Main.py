@@ -10,9 +10,9 @@ data = Data.Data(Params.FILE)
 bookm = Bookmaker.Bookmaker(data_dict=data.meta_datas, customizator={'normalized': True})
 eloStd = Elostd.Elostd(data_dict=data.meta_datas, customizator={'normalized': True})
 
-dictModels={"EloStd": eloStd,"Bookmaker":bookm}
+dictModels = {"EloStd": eloStd, "Bookmaker": bookm}
 
-launch = Launch.Launch(data, dictModels, 'Lpack', display=1)
+launch = Launch.Launch(data, dictModels, 'Shuffle', display=1)
 
 launch.execute()
 
