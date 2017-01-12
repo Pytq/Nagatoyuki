@@ -101,7 +101,7 @@ class Launch:
                                                             str(100*evaluation[model_name]["Mean"])[:7],
                                                             str(100*evaluation[model_name]["StdDev"])[:7]))
 
-        self.model.close()
+        # self.model.close()
 
     def target_loss(self, params):
         self.model.session.run(self.model.init_all)
