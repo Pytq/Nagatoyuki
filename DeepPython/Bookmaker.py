@@ -17,8 +17,8 @@ class Bookmaker(M.Model):
             if 'renormalized' in self.customizator and not self.customizator['renormalized']:
                 return tf.pack([p_win, p_tie, p_los], axis=1)
             else:
-                sum = p_win + p_los + p_tie
-                return tf.pack([p_win / sum, p_tie / sum, p_los / sum], axis=1)
+                sum_p = p_win + p_los + p_tie
+                return tf.pack([p_win / sum_p, p_tie / sum_p, p_los / sum_p], axis=1)
 
         else:
             print(target + ' not implemented.')
