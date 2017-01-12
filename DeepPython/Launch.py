@@ -7,40 +7,38 @@ import tensorflow as tf
 
 
 class Launch:
-    def __init__(self, data, model, bookmaker, type_slice, display=3):
+    def __init__(self, data, dictModels, type_slice, display=3):
         self.data = data
-        self.model = model
-        self.bookmaker = bookmaker
-        self.names = {"Model": self.model}
-        if self.bookmaker is not None:
-            self.names["Bookmaker"] = self.bookmaker
+        self.models = dictModels
         self.type_slice = type_slice
         self.tf_operations = []
         self.session = None
         self.display = display
+        
         self.initialize()
 
     def initialize(self):
         ll_res = Costs.Cost('logloss', feed_dict={'target': 'res', 'feature_dim': 1, 'regularized': False})
         rll_res = Costs.Cost('logloss', feed_dict={'target': 'res', 'feature_dim': 1, 'regularized': True})
-        for element in self.names.values():
-            element.add_cost(ll_res, trainable=False)
-            if element.is_trainable():
-                element.add_cost(rll_res, trainable=True)
-            element.finish_init()
-            element.set_params(Params.paramStd)
+        
+        for model in self.models.values():
+            model.add_cost(ll_res, trainable=False)
+            if model.is_trainable():
+                model.add_cost(rll_res, trainable=True)
+            model.finish_init()
+            model.set_params(Params.paramStd)
 
     def execute(self):
         if self.display <= 2:
             print("Evaluating Model vs Bookmaker")
         print()
 
-        evaluation = {x: {"prediction": None, "ll_sum": 0, "lls_sum": 0} for x in list(self.names) + ["Diff"]}
+        evaluation = {x: {"prediction": None, "ll_sum": 0, "lls_sum": 0} for x in list(self.models) + ["Diff"]}
 
         self.data.init_slices(self.type_slice, feed_dict={'p_train': 0.5})
-        now = time.strftime('%Y_%m_%d_%H_%M_%S')
+        timeNow = time.strftime('%Y_%m_%d_%H_%M_%S')
 
-        with open(Params.OUTPUT + '_' + now, 'w') as csvfile:
+        with open(Params.OUTPUT + '_' + timeNow, 'w') as csvfile:
             spamwriter = csv.writer(csvfile, delimiter=',', quotechar='|', quoting=csv.QUOTE_MINIMAL)
             nb_slices = self.data.nb_slices(self.type_slice) if self.type_slice != "Shuffle" else 3
             for i in range(nb_slices):
@@ -52,19 +50,19 @@ class Launch:
                     if self.display <= 1:
                         print("Working on slice {} / {} ...".format(i + 1, nb_slices))
 
-                    for element_name, element in self.names.items():
-                        t = time.time()
-                        element.reset()
+                    for model_name, model in self.models.items():
+                        timeStartModel = time.time()
+                        model.reset()
 
-                        if element.is_trainable():
-                            self.set_current_slice(slice_train, element_name)
-                            element.train('rll_res', Params.NB_LOOPS)
+                        if model.is_trainable():
+                            self.set_current_slice(slice_train, model_name)
+                            model.train('rll_res', Params.NB_LOOPS)
 
-                        self.set_current_slice(slice_test, element_name)
+                        self.set_current_slice(slice_test, model_name)
 
-                        ll = element.get_cost('ll_res')
+                        ll = model.get_cost('ll_res')
 
-                        prediction = element.run(element.prediction['res'])
+                        prediction = model.run(model.prediction['res'])
 
                         datas = {}
                         for key in ['res', 'odds']:
@@ -77,8 +75,8 @@ class Launch:
                             if self.display <= 0:
                                 print(to_write)
                             spamwriter.writerow(to_write)
-                        evaluation[element_name]["current_ll"] = ll
-                        evaluation[element_name]["time"] = time.time()-t
+                        evaluation[model_name]["current_ll"] = ll
+                        evaluation[model_name]["time"] = time.time()-timeStartModel
                 self.data.next_slice(self.type_slice)
                 evaluation["Diff"]["current_ll"] = \
                     evaluation["Bookmaker"]["current_ll"] - evaluation["Model"]["current_ll"]
@@ -92,16 +90,16 @@ class Launch:
                                                                                 str(evaluation[key]["time"])[:4]))
                 print()
 
-        for element_name in evaluation:
-            evaluation[element_name]["Mean"] = evaluation[element_name]["ll_sum"] / nb_slices
-            evaluation[element_name]["StdDev"] = math.sqrt(evaluation[element_name]["lls_sum"] / nb_slices
-                                                           - evaluation[element_name]["Mean"] ** 2)
+        for model_name in evaluation:
+            evaluation[model_name]["Mean"] = evaluation[model_name]["ll_sum"] / nb_slices
+            evaluation[model_name]["StdDev"] = math.sqrt(evaluation[model_name]["lls_sum"] / nb_slices
+                                                           - evaluation[model_name]["Mean"] ** 2)
             if nb_slices > 1:
-                evaluation[element_name]["StdDev"] /= math.sqrt(nb_slices - 1)
+                evaluation[model_name]["StdDev"] /= math.sqrt(nb_slices - 1)
             if self.display <= 2:
-                print('{} - Mean: {}% / Std_dev: {}'.format(element_name,
-                                                            str(100*evaluation[element_name]["Mean"])[:7],
-                                                            str(100*evaluation[element_name]["StdDev"])[:7]))
+                print('{} - Mean: {}% / Std_dev: {}'.format(model_name,
+                                                            str(100*evaluation[model_name]["Mean"])[:7],
+                                                            str(100*evaluation[model_name]["StdDev"])[:7]))
 
         self.model.close()
 
@@ -130,9 +128,9 @@ class Launch:
             print(optimizer.opti_step())
             print(optimizer.to_optimize)
 
-    def set_current_slice(self, s, elem_name):
+    def set_current_slice(self, s, model_name):
         feed_dict = {}
-        elem = self.names[elem_name]
-        for key in elem.features_data():
-            feed_dict[elem.ph_current_slice[key]] = s[key]
-        elem.session.run(elem.tf_assign_slice, feed_dict=feed_dict)
+        model = self.models[model_name]
+        for key in model.features_data():
+            feed_dict[model.ph_current_slice[key]] = s[key]
+        model.session.run(model.tf_assign_slice, feed_dict=feed_dict)
