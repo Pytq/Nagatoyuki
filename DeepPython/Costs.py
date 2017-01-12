@@ -52,9 +52,9 @@ class Cost:
         probabilities = m.prediction[self.__parameters['target']] * m.current_slice[self.__parameters['target']]
         probabilities = tf.reduce_sum(probabilities, reduction_indices=reduction_indices)
         if self.__parameters['regularized']:
-            return tf.reduce_mean(-tf.log(probabilities + 1e-9))
-        else:
             return tf.reduce_mean(-tf.log(probabilities + 1e-9)) + m.regulizer
+        else:
+            return tf.reduce_mean(-tf.log(probabilities + 1e-9))
 
     def __apply(self, other, fun):
         result = Cost()

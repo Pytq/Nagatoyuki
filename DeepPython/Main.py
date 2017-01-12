@@ -10,7 +10,7 @@ data = Data.Data(Params.FILE)
 bookm = Bookmaker.Bookmaker(data_dict=data.meta_datas, customizator={'normalized': True})
 model = Elostd.Elostd(data_dict=data.meta_datas, customizator={'normalized': True})
 
-launch = Launch.Launch(data, model, bookm, 'Shuffle', display=1)
+launch = Launch.Launch(data, model, bookm, 'Lpack', display=1)
 
 launch.execute()
 

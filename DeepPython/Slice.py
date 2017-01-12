@@ -96,10 +96,10 @@ class Slice:
     def __shuffle_slice(self):
         self.__slices['internal_seed'] = random.getrandbits(64)
 
-    def check_slices(self, train_p, test_p):
+    def check_slices(self, train, test):
         datas = range(self.__nb_matches)
-        train = self.get_slice(train_p)(datas)
-        test = self.get_slice(test_p)(datas)
+        train = train(datas)
+        test = test(datas)
         if set(train) & set(test):
             raise 'overlapping test and train'
 

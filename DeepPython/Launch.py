@@ -3,6 +3,7 @@ import time
 import csv
 import math
 from DeepPython import Params, Costs, Metaopti
+import tensorflow as tf
 
 
 class Launch:
@@ -24,15 +25,17 @@ class Launch:
         rll_res = Costs.Cost('logloss', feed_dict={'target': 'res', 'feature_dim': 1, 'regularized': True})
         for element in self.names.values():
             element.add_cost(ll_res, trainable=False)
-            element.add_cost(rll_res, trainable=True)
+            if element.is_trainable():
+                element.add_cost(rll_res, trainable=True)
             element.finish_init()
             element.set_params(Params.paramStd)
 
     def execute(self):
         if self.display <= 2:
             print("Evaluating Model vs Bookmaker")
+        print()
 
-        evaluation = {x: {"prediction": None, "ll_mean": 0, "lls_mean": 0} for x in self.names}
+        evaluation = {x: {"prediction": None, "ll_sum": 0, "lls_sum": 0} for x in list(self.names) + ["Diff"]}
 
         self.data.init_slices(self.type_slice, feed_dict={'p_train': 0.5})
         now = time.strftime('%Y_%m_%d_%H_%M_%S')
@@ -41,16 +44,18 @@ class Launch:
             spamwriter = csv.writer(csvfile, delimiter=',', quotechar='|', quoting=csv.QUOTE_MINIMAL)
             nb_slices = self.data.nb_slices(self.type_slice) if self.type_slice != "Shuffle" else 3
             for i in range(nb_slices):
-                t = time.time()
                 train_p = {'when_odd': False}
                 test_p = {'when_odd': True}
                 slice_train, slice_test = self.data.cget_both_slices(self.type_slice, train_p=train_p, test_p=test_p)
 
                 if not (self.data.is_empty(slice_train) or self.data.is_empty(slice_test)):
                     if self.display <= 1:
-                        print("Working on slice {} / {}".format(i + 1, nb_slices))
+                        print("Working on slice {} / {} ...".format(i + 1, nb_slices))
+
                     for element_name, element in self.names.items():
+                        t = time.time()
                         element.reset()
+
                         if element.is_trainable():
                             self.set_current_slice(slice_train, element_name)
                             element.train('rll_res', Params.NB_LOOPS)
@@ -58,6 +63,7 @@ class Launch:
                         self.set_current_slice(slice_test, element_name)
 
                         ll = element.get_cost('ll_res')
+
                         prediction = element.run(element.prediction['res'])
 
                         datas = {}
@@ -71,19 +77,31 @@ class Launch:
                             if self.display <= 0:
                                 print(to_write)
                             spamwriter.writerow(to_write)
-                        evaluation[element_name]["ll_mean"] += ll
-                        evaluation[element_name]["lls_mean"] += ll ** 2
-                        if self.display <= 1:
-                            print(
-                                "{} - Slice {}: Cost {} computed in {} s.".format(element_name, i, str(ll)[:7], str(time.time() - t)[:4]))
+                        evaluation[element_name]["current_ll"] = ll
+                        evaluation[element_name]["time"] = time.time()-t
+                self.data.next_slice(self.type_slice)
+                evaluation["Diff"]["current_ll"] = \
+                    evaluation["Bookmaker"]["current_ll"] - evaluation["Model"]["current_ll"]
+                evaluation["Diff"]["time"] = 0.
+                for key in evaluation:
+                    evaluation[key]["ll_sum"] += evaluation[key]["current_ll"]
+                    evaluation[key]["lls_sum"] += evaluation[key]["current_ll"] ** 2
+                    if self.display <= 1:
+                        print("{} - Slice {}: Cost {} computed in {} s.".format(key, i+1,
+                                                                                str(evaluation[key]["current_ll"])[:7],
+                                                                                str(evaluation[key]["time"])[:4]))
+                print()
 
-        for element_name in self.names:
-            evaluation[element_name]["Mean"] = evaluation[element_name]["ll_mean"] / nb_slices
-            evaluation[element_name]["StdDev"] = math.sqrt(evaluation[element_name]["lls_mean"] / nb_slices
-                                                           - (evaluation[element_name]["ll_mean"] / nb_slices) ** 2)
+        for element_name in evaluation:
+            evaluation[element_name]["Mean"] = evaluation[element_name]["ll_sum"] / nb_slices
+            evaluation[element_name]["StdDev"] = math.sqrt(evaluation[element_name]["lls_sum"] / nb_slices
+                                                           - evaluation[element_name]["Mean"] ** 2)
+            if nb_slices > 1:
+                evaluation[element_name]["StdDev"] /= math.sqrt(nb_slices - 1)
             if self.display <= 2:
-                print('{} - Mean: {} / Std_dev: {}'.format(element_name, str(evaluation[element_name]["Mean"])[:7],
-                                                           str(evaluation[element_name]["StdDev"])[:7]))
+                print('{} - Mean: {}% / Std_dev: {}'.format(element_name,
+                                                            str(100*evaluation[element_name]["Mean"])[:7],
+                                                            str(100*evaluation[element_name]["StdDev"])[:7]))
 
         self.model.close()
 

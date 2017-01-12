@@ -72,7 +72,7 @@ class Data:
             test_p = {}
         train_p['label'] = 'train'
         test_p['label'] = 'test'
-        self.__slices[group].check_slices(train_p, test_p)
+        # self.__slices[group].check_slices(train_p, test_p)
         train = fun(group, train_p)
         test = fun(group, test_p)
         return train, test
