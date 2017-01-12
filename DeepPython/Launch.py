@@ -105,7 +105,7 @@ class Launch:
         fun = self.target_loss
         to_optimize = ['metaparamj2', 'metaparam2', 'bais_ext', 'draw_elo']
         metaparams = self.model.meta_params()
-        reset = self.data.next_slice('Shuffle')
+        reset = lambda: self.data.next_slice('Shuffle')
         optimizer = Metaopti.Metaopti(fun, metaparams, to_optimize, reset)
         optimizer.init_paramrange()
         while optimizer.to_optimize:
