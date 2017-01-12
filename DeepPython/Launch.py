@@ -79,9 +79,9 @@ class Launch:
                         evaluation[model_name]["time"] = time.time()-timeStartModel
                 self.data.next_slice(self.type_slice)
                 evaluation["Diff"]["current_ll"] = \
-                    evaluation["Bookmaker"]["current_ll"] - evaluation["Model"]["current_ll"]
+                    evaluation["Bookmaker"]["current_ll"] - evaluation["EloStd"]["current_ll"]
                 evaluation["Diff"]["time"] = 0.
-                for key in evaluation:
+                for key in evaluation.keys():
                     evaluation[key]["ll_sum"] += evaluation[key]["current_ll"]
                     evaluation[key]["lls_sum"] += evaluation[key]["current_ll"] ** 2
                     if self.display <= 1:
@@ -90,7 +90,7 @@ class Launch:
                                                                                 str(evaluation[key]["time"])[:4]))
                 print()
 
-        for model_name in evaluation:
+        for model_name in evaluation.keys():
             evaluation[model_name]["Mean"] = evaluation[model_name]["ll_sum"] / nb_slices
             evaluation[model_name]["StdDev"] = math.sqrt(evaluation[model_name]["lls_sum"] / nb_slices
                                                            - evaluation[model_name]["Mean"] ** 2)
@@ -101,7 +101,7 @@ class Launch:
                                                             str(100*evaluation[model_name]["Mean"])[:7],
                                                             str(100*evaluation[model_name]["StdDev"])[:7]))
 
-        # self.model.close()
+        self.model.close()
 
     def target_loss(self, params):
         self.model.session.run(self.model.init_all)
