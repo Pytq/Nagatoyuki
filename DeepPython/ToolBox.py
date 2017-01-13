@@ -3,6 +3,8 @@ import datetime
 
 ELOCONST = -1.
 
+#test git
+
 def nb_tf_op():
     return len(tf.get_default_graph().get_operations())
 
@@ -12,6 +14,10 @@ def kron(i_, j_):
         return 1.
     else:
         return 0.
+
+
+def timediff_gen(nb_times):
+    return tf.constant([[kron(i, j)-kron(j, i-1) for j in range(nb_times - 1)] for i in range(nb_times)])
 
 
 def timediff_gen(nb_times):
