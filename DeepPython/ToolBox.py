@@ -1,5 +1,6 @@
 import tensorflow as tf
 import datetime
+import random
 
 ELOCONST = -1.
 
@@ -24,6 +25,10 @@ def timediff_gen(nb_times):
     return tf.constant([[kron(i, j)-kron(j, i-1) for j in range(nb_times - 1)] for i in range(nb_times)])
 
 
+def sample(l):
+    return random.sample(l,len(l))
+
+
 def first_time(nb_times):
     first_time_python = [[0.] for i in range(nb_times)]
     first_time_python[0] = [1.]
@@ -35,8 +40,6 @@ def make_vector(pos, size):
     res[pos] = 1.
     return res
 
-def test_git():
-    pass
 
 def temp(i_, j_):
     if j_ == i_:
