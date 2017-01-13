@@ -34,6 +34,8 @@ def make_vector(pos, size):
     res[pos] = 1.
     return res
 
+def test_git():
+    pass
 
 def temp(i_, j_):
     if j_ == i_:
