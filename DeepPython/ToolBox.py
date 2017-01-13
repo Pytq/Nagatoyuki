@@ -21,10 +21,6 @@ def timediff_gen(nb_times):
     return tf.constant([[kron(i, j)-kron(j, i-1) for j in range(nb_times - 1)] for i in range(nb_times)])
 
 
-def timediff_gen(nb_times):
-    return tf.constant([[kron(i, j)-kron(j, i-1) for j in range(nb_times - 1)] for i in range(nb_times)])
-
-
 def sample(l):
     return random.sample(l,len(l))
 
