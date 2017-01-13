@@ -3,6 +3,7 @@ import datetime
 
 ELOCONST = -1.
 
+#test git
 
 def nb_tf_op():
     return len(tf.get_default_graph().get_operations())
