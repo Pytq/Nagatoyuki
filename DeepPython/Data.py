@@ -117,7 +117,7 @@ class Data:
         self.meta_datas["nb_saisons"] = 1 + max_saison - min_saison
         self.meta_datas["nb_max_journee"] = max_journee
         self.meta_datas["nb_journee"] = (self.meta_datas["nb_saisons"] + 1) * self.meta_datas["nb_max_journee"]
-        print(self.meta_datas)
+        print("Loading data with {}".format(self.meta_datas))
 
     def __get_formated_datas(self):
         for dict_row in self.py_datas:

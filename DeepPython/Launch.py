@@ -2,14 +2,17 @@
 import time
 import csv
 import math
+
+import itertools
+
 from DeepPython import Params, Costs, Metaopti
 import tensorflow as tf
 
 
 class Launch:
-    def __init__(self, data, dictModels, type_slice, display=3):
+    def __init__(self, data, dict_models, type_slice, display=3):
         self.data = data
-        self.models = dictModels
+        self.models = dict_models
         self.type_slice = type_slice
         self.tf_operations = []
         self.session = None
@@ -33,7 +36,12 @@ class Launch:
             print("Evaluating Models: {}".format(list(self.models)))
         print()
 
-        evaluation = {x: {"prediction": None, "ll_sum": 0, "lls_sum": 0} for x in list(self.models) + ["Diff"]}
+        diff_names = [{"from": x1, "to": x2, "name": "Diff_" + x1 + "_" + x2} for x1, x2 in itertools.product(self.models, self.models) if x1 < x2]
+        evaluation = {x: {"prediction": None, "ll_sum": 0, "lls_sum": 0, "current_ll": None, "time": 0} for x in list(self.models)
+                                            + [v["name"] for v in diff_names]}
+        for v in diff_names:
+            for t in ["from", "to"]:
+                evaluation[v["name"]][t] = v[t]
 
         self.data.init_slices(self.type_slice, feed_dict={'p_train': 0.5})
         timeNow = time.strftime('%Y_%m_%d_%H_%M_%S')
@@ -83,16 +91,15 @@ class Launch:
                         evaluation[model_name]["current_ll"] = ll
                         evaluation[model_name]["time"] = time.time()-timeStartModel
                 self.data.next_slice(self.type_slice)
-                evaluation["Diff"]["current_ll"] = \
-                    evaluation["Bookmaker"]["current_ll"] - evaluation["EloStd"]["current_ll"]
-                evaluation["Diff"]["time"] = 0.
-                for key in evaluation.keys():
-                    evaluation[key]["ll_sum"] += evaluation[key]["current_ll"]
-                    evaluation[key]["lls_sum"] += evaluation[key]["current_ll"] ** 2
+                for key, val in evaluation.items():
+                    if "Diff" in key:
+                        val["current_ll"] = evaluation[val["from"]]["current_ll"] - evaluation[val["to"]]["current_ll"]
+                    val["ll_sum"] += val["current_ll"]
+                    val["lls_sum"] += val["current_ll"] ** 2
                     if self.display <= 1:
                         print("{} - Slice {}: Cost {} computed in {} s.".format(key, i+1,
-                                                                                str(evaluation[key]["current_ll"])[:7],
-                                                                                str(evaluation[key]["time"])[:4]))
+                                                                                str(val["current_ll"])[:7],
+                                                                                str(val["time"])[:4]))
                 print()
             for model in self.models.values():
                 model.close()
