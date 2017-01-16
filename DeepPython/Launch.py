@@ -52,7 +52,7 @@ class Launch:
             train_p = {'when_odd': False}
             test_p = {'when_odd': True}
             for i in range(nb_slices):
-                if i%2 == 1 and self.type_slice == "Shuffle":
+                if i % 2 == 1 and self.type_slice == "Shuffle":
                     slice_train, slice_test = slice_test, slice_train
                     if self.display <= 1:
                         print("Shuffle mode: test and train are swapped")

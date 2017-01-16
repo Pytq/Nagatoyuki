@@ -1,8 +1,5 @@
 import tensorflow as tf
-from DeepPython import ToolBox, Model as M
-import Params
-import Bookmaker
-import Elostd
+from DeepPython import ToolBox, Model as M, Params, Bookmaker, Elostd, Elostdid
 
 
 class Regresseur(M.Model):
@@ -17,10 +14,8 @@ class Regresseur(M.Model):
             self.model__.append(Elostd.Elostd(data_dict=self.data_dict))
             self.model__[i].set_params(Params.paramStd)
 
-
         self.dictparam = {key:value for key,value in list(self.model__[0].dictparam.items()) + list(self.model__[1].dictparam.items())}
         self.model__b = Bookmaker.Bookmaker(data_dict=self.data_dict, customizator={'normalized': True}, name='book_reg')
-
 
     def get_prediction(self, s, target):
         if target == 'res':
@@ -33,4 +28,3 @@ class Regresseur(M.Model):
 
     def get_regularizer(self):
         return self.model__[0].get_regularizer() + self.model__[1].get_regularizer()
-
