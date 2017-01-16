@@ -48,11 +48,11 @@ class Launch:
 
         with open(Params.OUTPUT + '_' + timeNow, 'w') as csvfile:
             spamwriter = csv.writer(csvfile, delimiter=',', quotechar='|', quoting=csv.QUOTE_MINIMAL)
-            nb_slices = self.data.nb_slices(self.type_slice) if self.type_slice != "Shuffle" else 2
+            nb_slices = self.data.nb_slices(self.type_slice) if self.type_slice != "Shuffle" else 10
             train_p = {'when_odd': False}
             test_p = {'when_odd': True}
             for i in range(nb_slices):
-                if i == 1 and self.type_slice == "Shuffle":
+                if i%2 == 1 and self.type_slice == "Shuffle":
                     slice_train, slice_test = slice_test, slice_train
                     if self.display <= 1:
                         print("Shuffle mode: test and train are swapped")

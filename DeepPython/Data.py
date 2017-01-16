@@ -2,7 +2,7 @@ import csv
 from DeepPython import ToolBox, Params, Slice
 
 ALL_FEATURES = ['saison', 'team_h', 'team_a', 'res', 'score_h', 'score_a', 'journee',
-                'odd_win_h', 'odd_tie', 'odd_los_h', 'odds']
+                'odd_win_h', 'odd_tie', 'odd_los_h', 'odds', 'home_matchid', 'away_matchid']
 
 
 class Data:
@@ -92,32 +92,53 @@ class Data:
         min_saison = float("inf")
         max_saison = 0
         max_journee = 0
+        self.team_to_id = {}
+        self.id_to_team = []
+        team_nb_matchs = {}
+        teams_this_saison = set([])
+        teams_per_saison = []
         with open(filename) as csvfile:
             spamreader = csv.reader(csvfile, delimiter=',')
             header = spamreader.__next__()
             for row in spamreader:
                 if row:
                     dict_row = self.__add_header_to_data(row, header)
-                    if dict_row['id1'] > max_teamid or dict_row['id2'] > max_teamid:
-                        max_teamid = max(dict_row['id1'], dict_row['id2'])
-                    if dict_row['id1'] < min_teamid or dict_row['id2'] < min_teamid:
-                        min_teamid = min(dict_row['id1'], dict_row['id2'])
+                    if dict_row['HomeTeam'] not in self.team_to_id:
+                        self.team_to_id[dict_row['HomeTeam']] = len(self.id_to_team)
+                        self.id_to_team.append(dict_row['HomeTeam'])
+                        team_nb_matchs[dict_row['HomeTeam']] = 0
+                    if dict_row['AwayTeam'] not in self.team_to_id:
+                        self.team_to_id[dict_row['AwayTeam']] = len(self.id_to_team)
+                        self.id_to_team.append(dict_row['AwayTeam'])
+                        team_nb_matchs[dict_row['AwayTeam']] = 0
+                    dict_row['HomeId'] = team_nb_matchs[dict_row['HomeTeam']]
+                    dict_row['AwayId'] = team_nb_matchs[dict_row['AwayTeam']]
+                    team_nb_matchs[dict_row['HomeTeam']] += 1
+                    team_nb_matchs[dict_row['AwayTeam']] += 1
+                    if dict_row['saison'] < max_saison:
+                        raise Exception('Saisons non croissantes')
                     if dict_row['saison'] > max_saison:
                         max_saison = dict_row['saison']
+                        teams_per_saison.append(list(teams_this_saison))
+                        teams_this_saison = set([])
+                    teams_this_saison.add(dict_row['AwayTeam'])
+                    teams_this_saison.add(dict_row['HomeTeam'])
                     if dict_row['journee'] > max_journee:
                         max_journee = dict_row['journee']
                     if dict_row['saison'] < min_saison:
                         min_saison = dict_row['saison']
                     self.py_datas.append(dict_row)
                     self.meta_datas["nb_matchs"] += 1
-        if min_teamid != 0:
-            raise Exception('Id error : Min team id should be be 0 but is {}'.format(min_teamid))
-        self.meta_datas["nb_teams"] = max_teamid + 1
+        self.meta_datas["nb_teams"] = len(self.id_to_team)
         self.meta_datas["min_saison"] = min_saison
         self.meta_datas["nb_saisons"] = 1 + max_saison - min_saison
         self.meta_datas["nb_max_journee"] = max_journee
         self.meta_datas["nb_journee"] = (self.meta_datas["nb_saisons"] + 1) * self.meta_datas["nb_max_journee"]
+        print(team_nb_matchs)
+        self.meta_datas["max_match_id"] = max(list(team_nb_matchs.values()))
+
         print("Loading data with {}".format(self.meta_datas))
+        print([len(x) for x in teams_per_saison])
 
     def __get_formated_datas(self):
         for dict_row in self.py_datas:
@@ -126,8 +147,10 @@ class Data:
             self.__datas['odd_los_h'].append([dict_row["BbMxA"]])
             self.__datas['odds'].append([dict_row["BbMxH"], dict_row["BbMxD"], dict_row["BbMxA"]])
             self.__datas['saison'].append(ToolBox.make_vector(dict_row["saison"]-self.meta_datas['min_saison'], self.meta_datas['nb_saisons']))
-            self.__datas['team_h'].append(ToolBox.make_vector(dict_row["id1"], self.meta_datas["nb_teams"]))
-            self.__datas['team_a'].append(ToolBox.make_vector(dict_row["id2"], self.meta_datas["nb_teams"]))
+            self.__datas['team_h'].append(ToolBox.make_vector(self.team_to_id[dict_row["HomeTeam"]], self.meta_datas["nb_teams"]))
+            self.__datas['team_a'].append(ToolBox.make_vector(self.team_to_id[dict_row["AwayTeam"]], self.meta_datas["nb_teams"]))
+            self.__datas['home_matchid'].append(ToolBox.make_vector(dict_row["HomeId"], self.meta_datas["max_match_id"]))
+            self.__datas['away_matchid'].append(ToolBox.make_vector(dict_row["AwayId"], self.meta_datas["max_match_id"]))
             score_team_h = min(int(dict_row["score1"]), Params.MAX_GOALS)
             score_team_a = min(int(dict_row["score2"]), Params.MAX_GOALS)
             self.__datas['score_h'].append(ToolBox.make_vector(score_team_h, Params.MAX_GOALS+1))
@@ -138,10 +161,13 @@ class Data:
 
     def __add_header_to_data(self, row, header):
         d = {}
-        if len(row) != len(header):
-            raise Exception('Data.py associate_data_to_header()')
-        for i in range(len(row)):
+        if len(row) < len(header):
+            print('too many headers')
+            # raise Exception('Data.py associate_data_to_header()')
+        for i in range(len(header)):
             d[header[i].replace(" ", "")] = row[i]
+        d['HomeTeam'] = d['id1']
+        d['AwayTeam'] = d['id2']
         self.__format_row(d)
         return d
 
