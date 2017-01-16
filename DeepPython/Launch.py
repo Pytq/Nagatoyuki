@@ -100,6 +100,7 @@ class Launch:
                         print("{} - Slice {}: Cost {} computed in {} s.".format(key, i+1,
                                                                                 str(val["current_ll"])[:7],
                                                                                 str(val["time"])[:4]))
+                print('alpha', self.models['Regresseur'].run(self.models['Regresseur'].param['alpha']))
                 print()
             for model in self.models.values():
                 model.close()

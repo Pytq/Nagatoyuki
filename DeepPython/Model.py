@@ -3,7 +3,7 @@ from DeepPython import ToolBox
 
 
 class Model:
-    def __init__(self, data_dict=None, targets=None, customizator=None):
+    def __init__(self, data_dict=None, targets=None, customizator=None, name='untitle'):
 
         if targets is None:
             targets = ['res']
@@ -13,6 +13,7 @@ class Model:
 
         self.data_dict = data_dict
 
+        self.name = name
         self.costs = {}
         self.train_step = {}
         self.session = None
@@ -54,7 +55,7 @@ class Model:
     def finish_init(self):
         # Create the session
         self.init_all = tf.global_variables_initializer()
-        print('Model created. {} nodes in tf.Graph'.format(ToolBox.nb_tf_op()))
+        print('Model {} created. {} nodes in tf.Graph'.format(self.name, ToolBox.nb_tf_op()))
         self.new_session()
 
     def add_cost(self, cost, trainable=False):
@@ -66,7 +67,8 @@ class Model:
                 self.train_step[cost.name] = tf.train.AdamOptimizer(0.01).minimize(self.costs[cost.name])
 
     def set_params(self, param):
-        self.dictparam = {self.ph_metaparam[key]: value for key, value in param.items() if key in self.ph_metaparam}
+        if self.name != 'regr':
+            self.dictparam = {self.ph_metaparam[key]: value for key, value in param.items() if key in self.ph_metaparam}
 
     def reset(self):
         self.session.run(self.reset_op)

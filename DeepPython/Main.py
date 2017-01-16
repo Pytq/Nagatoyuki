@@ -1,5 +1,5 @@
 import sys
-from DeepPython import Data, Bookmaker, Launch, Params, Elostd, Elostdid
+from DeepPython import Data, Bookmaker, Launch, Params, Elostd, Elostdid, Regresseur
 
 
 print(sys.version)
@@ -7,15 +7,18 @@ print(sys.version)
 
 data = Data.Data(Params.FILE)
 
-bookm = Bookmaker.Bookmaker(data_dict=data.meta_datas, customizator={'normalized': True})
-eloStd1 = Elostdid.Elostd(data_dict=data.meta_datas, customizator={'normalized': True})
-eloStd2 = Elostd.Elostd(data_dict=data.meta_datas, customizator={'normalized': True})
+bookm = Bookmaker.Bookmaker(data_dict=data.meta_datas, customizator={'normalized': True}, name='bookm')
+regr = Regresseur.Regresseur(data_dict=data.meta_datas, name='regr')
+elo = Elostd.Elostd(data_dict=data.meta_datas, name='eloStd')
 
-dictModels = {"EloStd": eloStd1, "EloStd_id": eloStd2, "Bookmaker": bookm}
+
+dictModels = {"Regresseur": regr, "EloStd": elo, "Bookmaker": bookm}
 
 launch = Launch.Launch(data, dictModels, 'Shuffle', display=1)
 
 launch.execute()
+
+
 
 """
 

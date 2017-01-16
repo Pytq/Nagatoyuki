@@ -7,6 +7,7 @@ class Elostd(M.Model):
         return ['metaparam0', 'metaparam1', 'metaparamj0', 'metaparamj1',
                 'metaparam2', 'metaparamj2', 'bais_ext', 'draw_elo']
 
+
     def linear_meta_params(self):
         return ['bais_ext']
 
@@ -14,8 +15,8 @@ class Elostd(M.Model):
         return ['team_h', 'team_a', 'saison', 'journee', 'res']
 
     def define_parameters(self):
-        self.param['elo'] = tf.Variable(tf.zeros([self.data_dict["nb_teams"], self.data_dict["nb_saisons"]]))
-        self.param['elojournee'] = tf.Variable(tf.zeros([self.data_dict["nb_teams"], self.data_dict["nb_journee"]]))
+        self.param['elo'] = tf.Variable(tf.random_normal([self.data_dict["nb_teams"], self.data_dict["nb_saisons"]], mean=0.0, stddev=0.1)) #tf.zeros
+        self.param['elojournee'] = tf.Variable(tf.random_normal([self.data_dict["nb_teams"], self.data_dict["nb_journee"]], mean=0.0, stddev=0.1))
 
     def get_prediction(self, s, target):
         if target == 'res':
