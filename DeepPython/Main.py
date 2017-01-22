@@ -1,9 +1,13 @@
 import sys
 from DeepPython import Data, Bookmaker, Launch, Params, Elostd, Elostdid, Regresseur
 
+import Stats
 
 print(sys.version)
 
+file = '../Output/output_new_2017_01_22_18_40_48'
+
+# stats = Stats.Stats(file, s=10.)
 
 data = Data.Data(Params.FILE)
 
@@ -14,7 +18,7 @@ elo = Elostdid.Elostd(data_dict=data.meta_datas, customizator={'trainit': True},
 dictModels = {"Bookmaker": bookm, "Elo" : elo}
 init_dict = Params.paramStd
 
-launch = Launch.Launch(data, dictModels, 'Lpack', display=1, init_dict=init_dict)
+launch = Launch.Launch(data, dictModels, 'Shuffle', display=1, init_dict=init_dict)
 
 launch.execute()
 

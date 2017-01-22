@@ -54,7 +54,7 @@ class Launch:
             test_p = {'when_odd': True}
             for i in range(nb_slices):
                 if i % 2 == 1 and self.type_slice == "Shuffle" and False:
-                    slice_train, slice_test = slice_test, slice_train
+                    slice_test, slice_train = self.data.cget_both_slices(self.type_slice, train_p=test_p, test_p=train_p)
                     if self.display <= 1:
                         print("Shuffle mode: test and train are swapped")
                 else:
