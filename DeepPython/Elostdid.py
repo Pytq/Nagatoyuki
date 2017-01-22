@@ -42,11 +42,12 @@ class Elostd(M.Model):
                                         self.param['elojournee'], self.data_dict["max_match_id"])
         regulizer_list.append(cost)
 
+        time_multiplicator = tf.constant(self.data_dict['time_diff'])
         cost = ToolBox.get_timediff_elo_cost(self.metaparam['metaparam2'], self.param['elo'], self.data_dict["nb_saisons"])
         regulizer_list.append(cost)
 
         cost = ToolBox.get_timediff_elo_cost(self.metaparam['metaparamj2'],
-                                             self.param['elojournee'], self.data_dict["max_match_id"])
+                                             self.param['elojournee'], self.data_dict["max_match_id"], tm = time_multiplicator)
         regulizer_list.append(cost)
 
         return tf.add_n(regulizer_list)

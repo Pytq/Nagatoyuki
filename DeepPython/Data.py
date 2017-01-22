@@ -107,7 +107,7 @@ class Data:
                     dict_row = self.__add_header_to_data(row, header)
                     for k in ['Home', 'Away']:
                         key = dict_row[k + 'Team']
-                        if k + 'Team' not in self.team_to_id:
+                        if key not in self.team_to_id:
                             self.team_to_id[key] = len(self.id_to_team)
                             self.id_to_team.append(key)
                             team_nb_matchs[key] = 0
@@ -133,12 +133,12 @@ class Data:
         self.meta_datas["nb_max_journee"] = max_journee
         self.meta_datas["nb_journee"] = (self.meta_datas["nb_saisons"] + 1) * self.meta_datas["nb_max_journee"]
         self.meta_datas["max_match_id"] = max(list(team_nb_matchs.values()))
-        self.meta_datas["time_diff"] = [[0 for _ in range(self.meta_datas["nb_max_journee"])] for __ in range(self.meta_datas["nb_teams"])]
+        self.meta_datas["time_diff"] = [[0 for _ in range(self.meta_datas["max_match_id"] - 1)] for __ in range(self.meta_datas["nb_teams"])]
         for i in range(self.meta_datas["nb_teams"]):
             dt1 = team_time_diff_matchs[self.id_to_team[i]][1:]
             dt2 = team_time_diff_matchs[self.id_to_team[i]][:-1]
             for j in range(len(dt1)):
-                self.meta_datas['time_diff'][i][j] = dt1[j] - dt2[j]
+                self.meta_datas['time_diff'][i][j] = float(dt1[j] - dt2[j])
         print("Loading data with {}".format(self.meta_datas))
         print('Nb team per season: ', [len(x) for x in teams_per_saison])
 

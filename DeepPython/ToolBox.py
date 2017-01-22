@@ -103,10 +103,13 @@ def get_raw_elo_cost(metaparam0, metaparam1, elo, nb_times):
             return cost1 + cost2
 
 
-def get_timediff_elo_cost(metaparam, elo, nb_times):
+def get_timediff_elo_cost(metaparam, elo, nb_times, tm = None):
     timediff = timediff_gen(nb_times)
     if nb_times > 1:
-        cost_diffelo = tf.reduce_mean(tf.square(tf.matmul(elo, timediff)))
+        diff = tf.square(tf.matmul(elo, timediff))
+        if tm is not None:
+            diff = diff * tm
+        cost_diffelo = tf.reduce_mean(diff)
         cost_diffelo *= metaparam * ELOCONST ** 2
         return cost_diffelo
     else:
