@@ -20,6 +20,9 @@ class Model:
         self.dictparam = {}
         self.init_all = None
 
+        self.param = {}
+        self.define_parameters()
+
         self.metaparam = {}
         self.ph_metaparam = {}
         for key in self.meta_params():
@@ -40,8 +43,6 @@ class Model:
             assign_slice = tf.assign(self.current_slice[key], self.ph_current_slice[key], validate_shape=False)
             self.tf_assign_slice.append(assign_slice)
 
-        self.param = {}
-        self.define_parameters()
 
         params = [self.param[key] for key in self.param]
         self.reset_op = tf.variables_initializer(params, name='init')

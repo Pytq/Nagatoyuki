@@ -3,10 +3,12 @@ from DeepPython import ToolBox, Model as M
 
 
 class Elostd(M.Model):
+    def __init__(self):
+        raise Exception("Depreciated")
+
     def meta_params(self):
         return ['metaparam0', 'metaparam1', 'metaparamj0', 'metaparamj1',
                 'metaparam2', 'metaparamj2', 'bais_ext', 'draw_elo']
-
 
     def linear_meta_params(self):
         return ['bais_ext']

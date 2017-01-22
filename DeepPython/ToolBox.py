@@ -22,11 +22,11 @@ def timediff_gen(nb_times):
 
 
 def sample(l):
-    return random.sample(l,len(l))
+    return random.sample(l, len(l))
 
 
 def first_time(nb_times):
-    first_time_python = [[0.] for i in range(nb_times)]
+    first_time_python = [[0.] for _ in range(nb_times)]
     first_time_python[0] = [1.]
     return tf.constant(first_time_python)
 

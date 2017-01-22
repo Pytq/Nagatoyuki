@@ -9,7 +9,7 @@ data = Data.Data(Params.FILE)
 
 bookm = Bookmaker.Bookmaker(data_dict=data.meta_datas, customizator={'normalized': True}, name='bookm')
 regr = Regresseur.Regresseur(data_dict=data.meta_datas, name='regr')
-elo = Elostd.Elostd(data_dict=data.meta_datas, name='eloStd')
+elo = Elostdid.Elostd(data_dict=data.meta_datas, name='eloStd')
 
 
 dictModels = {"Regresseur": regr, "EloStd": elo, "Bookmaker": bookm}

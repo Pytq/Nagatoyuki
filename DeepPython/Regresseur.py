@@ -5,11 +5,14 @@ from DeepPython import ToolBox, Model as M, Params, Bookmaker, Elostd, Elostdid
 
 class Regresseur(M.Model):
     def features_data(self):
-        return ['odd_win_h', 'odd_tie', 'odd_los_h', 'team_h', 'team_a', 'saison', 'journee', 'res']
+        features = []
+        for m in self.model_list:
+            features += m.features_data()
+        return list(set(features))
 
     def define_parameters(self):
         self.model_list = []
-        m = Elostd.Elostd(data_dict=self.data_dict, name="elostd")
+        m = Elostdid.Elostd(data_dict=self.data_dict, name="elostd")
         m.set_params(Params.paramStd)
         self.model_list.append(m)
         self.model_list.append(Bookmaker.Bookmaker(data_dict=self.data_dict, customizator={'normalized': True}, name='book_reg'))
