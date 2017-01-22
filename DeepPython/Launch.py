@@ -10,7 +10,8 @@ import tensorflow as tf
 
 
 class Launch:
-    def __init__(self, data, dict_models, type_slice, display=3):
+    def __init__(self, data, dict_models, type_slice, display=3, init_dict=None):
+        self.init_dict = init_dict
         self.data = data
         self.models = dict_models
         self.type_slice = type_slice
@@ -87,13 +88,15 @@ class Launch:
                             to_write = list(prediction[j]) + datas['odds'][j] + datas['res'][j]
                             if self.display <= 0:
                                 print(to_write)
-                            spamwriter.writerow(to_write)
                         evaluation[model_name]["current_ll"] = ll
                         evaluation[model_name]["time"] = time.time()-timeStartModel
                 self.data.next_slice(self.type_slice)
                 for key, val in sorted(evaluation.items()):
                     if "zDiff" in key:
                         val["current_ll"] = evaluation[val["from"]]["current_ll"] - evaluation[val["to"]]["current_ll"]
+                        to_write = str(val["current_ll"])
+                        print(to_write)
+                        spamwriter.writerow([to_write])
                     val["ll_sum"] += val["current_ll"]
                     val["lls_sum"] += val["current_ll"] ** 2
                     if self.display <= 1:
@@ -124,7 +127,7 @@ class Launch:
         model.session.run(model.init_all)
         model.set_params(params)
         s_train, s_test = self.data.get_both_slices('Shuffle', train_p={'when_odd': False}, test_p={'when_odd': True})
-        self.set_current_slice(s_train)
+        self.set_current_slice(s_train, model_name)
         model.train('rll_res', Params.NB_LOOPS)
         self.set_current_slice(s_test, model_name)
         res = model.get_cost('ll_res')
@@ -137,10 +140,10 @@ class Launch:
         model = self.models[model_name]
         self.data.init_slices('Shuffle', feed_dict={'p_train': 0.5})
         fun = lambda params: self.target_loss(params, model_name)
-        to_optimize = ['metaparamj2', 'metaparam2', 'bais_ext', 'draw_elo']
+        to_optimize = model.meta_params()
         metaparams = model.meta_params()
         reset = lambda: self.data.next_slice('Shuffle')
-        optimizer = Metaopti.Metaopti(fun, metaparams, to_optimize, reset)
+        optimizer = Metaopti.Metaopti(fun, metaparams, to_optimize, reset, init_dict=self.init_dict)
         optimizer.init_paramrange()
         while optimizer.to_optimize:
             print(optimizer.opti_step())

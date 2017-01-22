@@ -4,19 +4,20 @@ from DeepPython import ToolBox
 
 
 class Metaopti:
-    def __init__(self, fun, params, to_optimize, reset, customizator=None):
+    def __init__(self, fun, params, to_optimize, reset, customizator=None, init_dict=None):
         if customizator is None:
             customizator = {}
+        self.init_dict = init_dict
         self.__fun = fun
         self.__params = {}
         self.to_optimize = to_optimize
         self.__paramrange = {}
         for key in params:
-            if key in self.to_optimize:
+            if init_dict is None:
                 self.__params[key] = 0.
             else:
-                self.__params[key] = -5.
-            self.__paramrange[key] = 0.5
+                self.__params[key] = init_dict[key]
+            self.__paramrange[key] = 20.
         self.__reset = reset
         self.__custumizator = {'k': 5, 'alpha': 0.7, 'treshold': 0.005}
         for key in customizator:
@@ -78,6 +79,7 @@ class Metaopti:
             if y_max - y_min < self.__custumizator['treshold']:
                 self.to_optimize.remove(key)
         current_value = self.__fun(self.__params)
+        print(self.__params)
         return start_value - current_value, current_value, start_value
 
 

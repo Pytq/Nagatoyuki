@@ -45,8 +45,9 @@ class Slice:
         return self.switcher[self.__group]['next_slice']()
 
     def __init_lpack(self, py_datas):
-        train = [{'left': 0, 'right': 4950 + 10*i, 'name': 'train_'+str(i)} for i in range(int(len(py_datas)/10)-500)]
-        test = [{'left': 4950 + 10 * i, 'right': 4960 + 10 * i, 'name': 'test_'+str(i)} for i in range(int(len(py_datas) / 10) - 500)]
+        size = 10
+        train = [{'left': 0, 'right': 4950 + size*i, 'name': 'train_'+str(i)} for i in range((len(py_datas) - 5000) // size)]
+        test = [{'left': 4950 + size * i, 'right': 4960 + size * i, 'name': 'test_'+str(i)} for i in range((len(py_datas) - 5000) // size)]
         self.nb_slices = len(train)
         self.__slices = {'train': train, 'test': test}
         self.__quick_check_slices(self.__group)

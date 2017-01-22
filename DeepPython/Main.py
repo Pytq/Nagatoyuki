@@ -8,13 +8,13 @@ print(sys.version)
 data = Data.Data(Params.FILE)
 
 bookm = Bookmaker.Bookmaker(data_dict=data.meta_datas, customizator={'normalized': True}, name='bookm')
-regr = Regresseur.Regresseur(data_dict=data.meta_datas, name='regr')
-elo = Elostdid.Elostd(data_dict=data.meta_datas, name='eloStd')
+# regr = Regresseur.Regresseur(data_dict=data.meta_datas, name='regr')
+elo = Elostdid.Elostd(data_dict=data.meta_datas, customizator={'trainit': True}, name='eloStd')
 
+dictModels = {"Bookmaker": bookm, "Elo" : elo}
+init_dict = Params.paramStd
 
-dictModels = {"Regresseur": regr, "EloStd": elo, "Bookmaker": bookm}
-
-launch = Launch.Launch(data, dictModels, 'Lpack', display=1)
+launch = Launch.Launch(data, dictModels, 'Lpack', display=1, init_dict=init_dict)
 
 launch.execute()
 
