@@ -1,5 +1,6 @@
 import csv
 from DeepPython import ToolBox, Params, Slice
+from DeepPython.ToolBox import number_of_days_since_1900
 
 ALL_FEATURES = ['saison', 'team_h', 'team_a', 'res', 'score_h', 'score_a',
                 'odd_win_h', 'odd_tie', 'odd_los_h', 'odds', 'home_matchid', 'away_matchid']
@@ -95,6 +96,7 @@ class Data:
         self.team_to_id = {}
         self.id_to_team = []
         team_nb_matchs = {}
+        team_time_diff_matchs = {}
         teams_this_saison = set([])
         teams_per_saison = []
         with open(filename) as csvfile:
@@ -103,18 +105,16 @@ class Data:
             for row in spamreader:
                 if row:
                     dict_row = self.__add_header_to_data(row, header)
-                    if dict_row['HomeTeam'] not in self.team_to_id:
-                        self.team_to_id[dict_row['HomeTeam']] = len(self.id_to_team)
-                        self.id_to_team.append(dict_row['HomeTeam'])
-                        team_nb_matchs[dict_row['HomeTeam']] = 0
-                    if dict_row['AwayTeam'] not in self.team_to_id:
-                        self.team_to_id[dict_row['AwayTeam']] = len(self.id_to_team)
-                        self.id_to_team.append(dict_row['AwayTeam'])
-                        team_nb_matchs[dict_row['AwayTeam']] = 0
-                    dict_row['HomeId'] = team_nb_matchs[dict_row['HomeTeam']]
-                    dict_row['AwayId'] = team_nb_matchs[dict_row['AwayTeam']]
-                    team_nb_matchs[dict_row['HomeTeam']] += 1
-                    team_nb_matchs[dict_row['AwayTeam']] += 1
+                    for k in ['Home', 'Away']:
+                        key = dict_row[k + 'Team']
+                        if dict_row[key] not in self.team_to_id:
+                            self.team_to_id[key] = len(self.id_to_team)
+                            self.id_to_team.append(key)
+                            team_nb_matchs[key] = 0
+                            team_time_diff_matchs[key] = []
+                        dict_row[k + 'Id'] = team_nb_matchs[key]
+                        team_nb_matchs[key] += 1
+                        team_time_diff_matchs[key].append(number_of_days_since_1900(dict_row['Date']))
                     if dict_row['saison'] < max_saison:
                         raise Exception('Saisons non croissantes')
                     if dict_row['saison'] > max_saison:
@@ -132,11 +132,15 @@ class Data:
         self.meta_datas["nb_saisons"] = 1 + max_saison - min_saison
         self.meta_datas["nb_max_journee"] = max_journee
         self.meta_datas["nb_journee"] = (self.meta_datas["nb_saisons"] + 1) * self.meta_datas["nb_max_journee"]
-        print(team_nb_matchs)
         self.meta_datas["max_match_id"] = max(list(team_nb_matchs.values()))
-
+        self.meta_datas["time_diff"] = [[0 for _ in range(self.meta_datas["nb_max_journee"])] for __ in range(self.meta_datas["nb_teams"])]
+        for i in range(self.meta_datas["nb_teams"]):
+            dt1 = team_time_diff_matchs[self.id_to_team[i]][1:]
+            dt2 = team_time_diff_matchs[self.id_to_team[i]][:-1]
+            for j in len(dt1):
+                self.meta_datas['time_diff'][i][j] = dt1[j] - dt2[j]
         print("Loading data with {}".format(self.meta_datas))
-        print('nb team per season: ', [len(x) for x in teams_per_saison])
+        print('Nb team per season: ', [len(x) for x in teams_per_saison])
 
     def __get_formated_datas(self):
         for dict_row in self.py_datas:

@@ -134,4 +134,21 @@ def alter(i, j, param):
 
 
 def alter_proba(param):
-    return tf.constant([[alter(i,j,param) for j in range(10)] for i in range(10)])
+    return tf.constant([[alter(i, j, param) for j in range(10)] for i in range(10)])
+
+
+def convert_date(s):
+    if len(s) != 8:
+        raise Exception("Cannot convert date from {}".format(s))
+    d = datetime.date(int(s[:4]), int(s[4:6]), int(s[6:]))
+    if d.year < 1902 or d.year > 2017:
+        raise Exception("Year seems incorrect {} for date {}".format(d.year, s))
+    return d
+
+
+def number_of_days_since_1900(d):
+    if type(d) == str:
+        d = convert_date(d)
+    o = datetime.date(1900, 1, 1)
+    return (d - o).days
+
