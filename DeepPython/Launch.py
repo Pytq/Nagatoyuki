@@ -36,7 +36,7 @@ class Launch:
             print("Evaluating Models: {}".format(list(self.models)))
         print()
 
-        diff_names = [{"from": x1, "to": x2, "name": "Diff_" + x1 + "_" + x2} for x1, x2 in itertools.product(self.models, self.models) if x1 < x2]
+        diff_names = [{"from": x1, "to": x2, "name": "zDiff_" + x1 + "_" + x2} for x1, x2 in itertools.product(self.models, self.models) if x1 < x2]
         evaluation = {x: {"prediction": None, "ll_sum": 0, "lls_sum": 0, "current_ll": None, "time": 0} for x in list(self.models)
                                             + [v["name"] for v in diff_names]}
         for v in diff_names:
@@ -52,7 +52,7 @@ class Launch:
             train_p = {'when_odd': False}
             test_p = {'when_odd': True}
             for i in range(nb_slices):
-                if i % 2 == 1 and self.type_slice == "Shuffle":
+                if i % 2 == 1 and self.type_slice == "Shuffle" and False:
                     slice_train, slice_test = slice_test, slice_train
                     if self.display <= 1:
                         print("Shuffle mode: test and train are swapped")
@@ -91,8 +91,8 @@ class Launch:
                         evaluation[model_name]["current_ll"] = ll
                         evaluation[model_name]["time"] = time.time()-timeStartModel
                 self.data.next_slice(self.type_slice)
-                for key, val in evaluation.items():
-                    if "Diff" in key:
+                for key, val in sorted(evaluation.items()):
+                    if "zDiff" in key:
                         val["current_ll"] = evaluation[val["from"]]["current_ll"] - evaluation[val["to"]]["current_ll"]
                     val["ll_sum"] += val["current_ll"]
                     val["lls_sum"] += val["current_ll"] ** 2
@@ -100,7 +100,10 @@ class Launch:
                         print("{} - Slice {}: Cost {} computed in {} s.".format(key, i+1,
                                                                                 str(val["current_ll"])[:7],
                                                                                 str(val["time"])[:4]))
-                print('alpha', self.models['Regresseur'].run(self.models['Regresseur'].param['alpha']))
+                if 'Regresseur' in self.models:
+                    for x in self.models['Regresseur'].param:
+                        if 'alpha_' in x:
+                            print(x, self.models['Regresseur'].run(self.models['Regresseur'].param[x]))
                 print()
             for model in self.models.values():
                 model.close()

@@ -14,7 +14,7 @@ elo = Elostd.Elostd(data_dict=data.meta_datas, name='eloStd')
 
 dictModels = {"Regresseur": regr, "EloStd": elo, "Bookmaker": bookm}
 
-launch = Launch.Launch(data, dictModels, 'Shuffle', display=1)
+launch = Launch.Launch(data, dictModels, 'Lpack', display=1)
 
 launch.execute()
 
