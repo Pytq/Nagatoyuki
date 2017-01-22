@@ -45,15 +45,21 @@ class Slice:
         return self.switcher[self.__group]['next_slice']()
 
     def __init_lpack(self, py_datas):
+        train = [{'left': 0, 'right': 4950 + 10*i, 'name': 'train_'+str(i)} for i in range(int(len(py_datas)/10)-500)]
+        test = [{'left': 4950 + 10 * i, 'right': 4960 + 10 * i, 'name': 'test_'+str(i)} for i in range(int(len(py_datas) / 10) - 500)]
+        self.nb_slices = len(train)
+        self.__slices = {'train': train, 'test': test}
+        self.__quick_check_slices(self.__group)
+        self.__slices['i'] = 0
+
+    def __old_init_lpack(self, py_datas):
         self.__slices = {'train': [], 'test': []}
-        current_journee = -1
         current_nb_slice = -1
         nb_matchs = 0
         current_slice_test = {'left': 0, 'right': 0}
         current_slice_train = {'left': 0, 'right': 0}
         for row in py_datas:
-            if current_journee != row["journee"] and nb_matchs > 3800:
-                current_journee = row["journee"]
+            if nb_matchs > 4950:
                 current_slice_test['right'] = nb_matchs + 1
                 current_slice_test['name'] = 'test_' + str(current_nb_slice)
                 current_slice_train['right'] = nb_matchs + 1

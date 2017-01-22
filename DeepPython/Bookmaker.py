@@ -14,7 +14,7 @@ class Bookmaker(M.Model):
             p_win = 1. / tf.squeeze(s['odd_win_h'])
             p_tie = 1. / tf.squeeze(s['odd_tie'])
             p_los = 1. / tf.squeeze(s['odd_los_h'])
-            if 'renormalized' in self.customizator and not self.customizator['renormalized']:
+            if 'normalized' in self.customizator and not self.customizator['normalized']:
                 return tf.pack([p_win, p_tie, p_los], axis=1)
             else:
                 sum_p = p_win + p_los + p_tie

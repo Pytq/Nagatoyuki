@@ -1,7 +1,7 @@
 import csv
 from DeepPython import ToolBox, Params, Slice
 
-ALL_FEATURES = ['saison', 'team_h', 'team_a', 'res', 'score_h', 'score_a', 'journee',
+ALL_FEATURES = ['saison', 'team_h', 'team_a', 'res', 'score_h', 'score_a',
                 'odd_win_h', 'odd_tie', 'odd_los_h', 'odds', 'home_matchid', 'away_matchid']
 
 
@@ -123,8 +123,6 @@ class Data:
                         teams_this_saison = set([])
                     teams_this_saison.add(dict_row['AwayTeam'])
                     teams_this_saison.add(dict_row['HomeTeam'])
-                    if dict_row['journee'] > max_journee:
-                        max_journee = dict_row['journee']
                     if dict_row['saison'] < min_saison:
                         min_saison = dict_row['saison']
                     self.py_datas.append(dict_row)
@@ -138,7 +136,7 @@ class Data:
         self.meta_datas["max_match_id"] = max(list(team_nb_matchs.values()))
 
         print("Loading data with {}".format(self.meta_datas))
-        print([len(x) for x in teams_per_saison])
+        print('nb team per season: ', [len(x) for x in teams_per_saison])
 
     def __get_formated_datas(self):
         for dict_row in self.py_datas:
@@ -151,23 +149,18 @@ class Data:
             self.__datas['team_a'].append(ToolBox.make_vector(self.team_to_id[dict_row["AwayTeam"]], self.meta_datas["nb_teams"]))
             self.__datas['home_matchid'].append(ToolBox.make_vector(dict_row["HomeId"], self.meta_datas["max_match_id"]))
             self.__datas['away_matchid'].append(ToolBox.make_vector(dict_row["AwayId"], self.meta_datas["max_match_id"]))
-            score_team_h = min(int(dict_row["score1"]), Params.MAX_GOALS)
-            score_team_a = min(int(dict_row["score2"]), Params.MAX_GOALS)
+            score_team_h = min(int(dict_row["scoreH"]), Params.MAX_GOALS)
+            score_team_a = min(int(dict_row["scoreA"]), Params.MAX_GOALS)
             self.__datas['score_h'].append(ToolBox.make_vector(score_team_h, Params.MAX_GOALS+1))
             self.__datas['score_a'].append(ToolBox.make_vector(score_team_a, Params.MAX_GOALS+1))
-            self.__datas['res'].append(ToolBox.result_vect(int(dict_row["score1"]) - int(dict_row["score2"])))
-            journee = dict_row["journee"] + self.meta_datas["nb_max_journee"]*(dict_row["saison"]-self.meta_datas['min_saison'])
-            self.__datas['journee'].append(ToolBox.make_vector(journee, self.meta_datas['nb_journee']))
+            self.__datas['res'].append(ToolBox.result_vect(int(dict_row["scoreH"]) - int(dict_row["scoreA"])))
 
     def __add_header_to_data(self, row, header):
         d = {}
         if len(row) < len(header):
-            print('too many headers')
-            # raise Exception('Data.py associate_data_to_header()')
+            raise Exception('Too many header', row, header, len(row), len(header))
         for i in range(len(header)):
             d[header[i].replace(" ", "")] = row[i]
-        d['HomeTeam'] = d['id1']
-        d['AwayTeam'] = d['id2']
         self.__format_row(d)
         return d
 
@@ -180,12 +173,9 @@ class Data:
             dict_row["BbMxH"] = float(dict_row["BbMxH"])
             dict_row["BbMxD"] = float(dict_row["BbMxD"])
             dict_row["BbMxA"] = float(dict_row["BbMxA"])
-        dict_row["saison"] = int(dict_row["saison"])
-        dict_row["journee"] = int(dict_row["journee"])
-        dict_row["id1"] = int(dict_row["id1"]) - 1
-        dict_row["id2"] = int(dict_row["id2"]) - 1
-        dict_row["score1"] = int(dict_row["score1"])
-        dict_row["score2"] = int(dict_row["score2"])
+        dict_row["saison"] = int(dict_row["Season"])
+        dict_row["scoreH"] = int(dict_row["FTHG"])
+        dict_row["scoreA"] = int(dict_row["FTAG"])
 
     @staticmethod
     def check_len(s):
