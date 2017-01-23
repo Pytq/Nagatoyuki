@@ -7,18 +7,16 @@ class Model:
 
         if session is None:
             raise Exception('A session must be fed')
-        else:
-            self.session = session
         if targets is None:
             targets = ['res']
         if customizator is None:
             customizator = {}
-        self.customizator = customizator
 
+        self.session = session
+        self.customizator = customizator
         self.data_dict = data_dict
         self.name = name
         self.costs = {}
-        self.train_step = {}
         self.dictparam = None
 
         # Define trainable_parameters
@@ -64,6 +62,9 @@ class Model:
         print('Model {} created. {} nodes in tf.Graph'.format(self.name, ToolBox.nb_tf_op()))
         if self.reset_op is not None:
             self.reset_trainable_parameters()
+        for cost in self.costs.values():
+            if cost['trainable']:
+                self.session.run(cost['initializer'])
 
     def add_cost(self, cost, trainable=False):
         if cost.name in self.costs:
@@ -71,10 +72,20 @@ class Model:
         else:
             self.costs[cost.name] = {}
             self.costs[cost.name]['cost'] = cost.get_cost(self)
+            self.costs[cost.name]['trainable'] = False
             if trainable and not self.is_trainable():
                 raise Exception('Model {} is not trainable yet is given cost {} which is trainable'.format(self.name, cost.name))
             elif trainable and self.is_trainable():
-                self.costs[cost.name]['train_step'] = tf.train.AdamOptimizer(0.01).minimize(self.costs[cost.name])
+                self.costs[cost.name]['trainable'] = True
+                vars = tf.global_variables()
+                self.costs[cost.name]['train_step'] = tf.train.AdamOptimizer(0.01).minimize(self.costs[cost.name]['cost'])
+                self.costs[cost.name]['internal_vars'] = []
+                new_vars = tf.global_variables()
+                for var in new_vars:
+                    if var not in vars:
+                        self.costs[cost.name]['internal_vars'].append(var)
+                self.costs[cost.name]['initializer'] = tf.variables_initializer(self.costs[cost.name]['internal_vars'],
+                                                                                name='{}.{}.initializer'.format(self.name, cost.name))
 
 
     def set_params(self, param):
@@ -83,8 +94,6 @@ class Model:
     def reset_trainable_parameters(self):
         if self.reset_op is not None:
             self.session.run(self.reset_op)
-        else:
-            raise Exception('Cannot reset trainable parameters of model {} which has no such parameters'.format(self.name))
 
     def train(self, cost, iterations):
         for _ in range(iterations):
