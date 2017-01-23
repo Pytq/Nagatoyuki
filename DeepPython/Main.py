@@ -1,6 +1,6 @@
 import sys
 from DeepPython import Data, Bookmaker, Launch, Params, Elostd, Elostdid, Regresseur
-
+import tensorflow as tf
 import Stats
 
 print(sys.version)
@@ -9,11 +9,12 @@ file = '../Output/output_new_2017_01_22_18_40_48'
 
 # stats = Stats.Stats(file, s=10.)
 
+session = tf.Session()
 data = Data.Data(Params.FILE)
 
-bookm = Bookmaker.Bookmaker(data_dict=data.meta_datas, customizator={'normalized': True}, name='bookm')
+bookm = Bookmaker.Bookmaker(data_dict=data.meta_datas, customizator={'normalized': True}, name='bookm', session=session)
 # regr = Regresseur.Regresseur(data_dict=data.meta_datas, name='regr')
-elo = Elostdid.Elostd(data_dict=data.meta_datas, customizator={'trainit': True}, name='eloStd')
+elo = Elostdid.Elostd(data_dict=data.meta_datas, customizator={'trainit': True}, name='eloStd', session=session)
 
 dictModels = {"Bookmaker": bookm, "Elo" : elo}
 init_dict = Params.paramStd
