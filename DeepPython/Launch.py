@@ -66,7 +66,7 @@ class Launch:
 
                     for model_name, model in self.models.items():
                         timeStartModel = time.time()
-                        model.reset()
+                        model.reset_trainable_parameters()
 
                         if model.is_trainable():
                             self.set_current_slice(slice_train, model_name)

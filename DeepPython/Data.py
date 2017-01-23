@@ -151,6 +151,8 @@ class Data:
             self.__datas['saison'].append(ToolBox.make_vector(dict_row["saison"]-self.meta_datas['min_saison'], self.meta_datas['nb_saisons']))
             self.__datas['team_h'].append(ToolBox.make_vector(self.team_to_id[dict_row["HomeTeam"]], self.meta_datas["nb_teams"]))
             self.__datas['team_a'].append(ToolBox.make_vector(self.team_to_id[dict_row["AwayTeam"]], self.meta_datas["nb_teams"]))
+            # self.__datas['home_sparce_matchid'].append(dict_row["HomeId"])
+            # self.__datas['away_sparce_matchid'].append(dict_row["AwayId"])
             self.__datas['home_matchid'].append(ToolBox.make_vector(dict_row["HomeId"], self.meta_datas["max_match_id"]))
             self.__datas['away_matchid'].append(ToolBox.make_vector(dict_row["AwayId"], self.meta_datas["max_match_id"]))
             score_team_h = min(int(dict_row["scoreH"]), Params.MAX_GOALS)

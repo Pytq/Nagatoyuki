@@ -19,7 +19,7 @@ class Elodim(M.Model):
         for model in self.m:
             model.set_params(Params.paramStd)
         r = [x.get_prediction(s, target) for x in self.m]
-        r = [tf.pow(x, self.metaparam['alpha']) for x in r]
+        r = [tf.pow(x, self.given_params['alpha']) for x in r]
         rf = tf.add_n(r)
         return rf/tf.reduce_sum(rf)
 

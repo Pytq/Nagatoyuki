@@ -19,14 +19,14 @@ class Regresseur(M.Model):
         self.dictparam = {}
         for m in self.model_list:
             self.dictparam.update(m.dictparam)
-            if 'alpha_' + m.name in self.param:
+            if 'alpha_' + m.name in self.trainable_params:
                 raise Exception("Error model {} appears twice in regresseur".format(m.name))
-            self.param['alpha_' + m.name] = tf.Variable(1./len(self.model_list))
+            self.trainable_params['alpha_' + m.name] = tf.Variable(1. / len(self.model_list))
 
     def get_prediction(self, s, target):
         if target == 'res':
-            sum_alpha = tf.add_n([self.param['alpha_' + m.name] for m in self.model_list])
-            return tf.add_n([self.param['alpha_' + m.name] / sum_alpha * m.get_prediction(s, target) for m in self.model_list])
+            sum_alpha = tf.add_n([self.trainable_params['alpha_' + m.name] for m in self.model_list])
+            return tf.add_n([self.trainable_params['alpha_' + m.name] / sum_alpha * m.get_prediction(s, target) for m in self.model_list])
         else:
             raise Exception(target + ' not implemented.')
 

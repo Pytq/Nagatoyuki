@@ -19,22 +19,22 @@ class Elostd(M.Model):
         return ['team_h', 'team_a', 'saison', 'res', 'home_matchid', 'away_matchid']
 
     def define_parameters(self):
-        self.param['elo'] = tf.Variable(tf.zeros([self.data_dict["nb_teams"], self.data_dict["nb_saisons"]]))
-        self.param['elojournee'] = tf.Variable(tf.zeros([self.data_dict["nb_teams"], self.data_dict["max_match_id"]]))
-        self.param['bais_ext'] = tf.Variable(0.)
-        self.param['draw_elo'] = tf.Variable(0.)
+        self.trainable_params['elo'] = tf.Variable(tf.zeros([self.data_dict["nb_teams"], self.data_dict["nb_saisons"]]))
+        self.trainable_params['elojournee'] = tf.Variable(tf.zeros([self.data_dict["nb_teams"], self.data_dict["max_match_id"]]))
+        self.trainable_params['bais_ext'] = tf.Variable(0.)
+        self.trainable_params['draw_elo'] = tf.Variable(0.)
 
     def get_prediction(self, s, target):
         if target == 'res':
-            elomatch = ToolBox.get_elomatch(s['team_h'] - s['team_a'], s['saison'], self.param['elo'])
-            elomatch += ToolBox.get_elomatch(s['team_h'], s['home_matchid'], self.param['elojournee'])
-            elomatch -= ToolBox.get_elomatch(s['team_a'], s['away_matchid'], self.param['elojournee'])
+            elomatch = ToolBox.get_elomatch(s['team_h'] - s['team_a'], s['saison'], self.trainable_params['elo'])
+            elomatch += ToolBox.get_elomatch(s['team_h'], s['home_matchid'], self.trainable_params['elojournee'])
+            elomatch -= ToolBox.get_elomatch(s['team_a'], s['away_matchid'], self.trainable_params['elojournee'])
             if self.customizator['trainit']:
-                elomatch += self.param['bais_ext']
-                draw_elo = tf.exp(self.param['draw_elo'])
+                elomatch += self.trainable_params['bais_ext']
+                draw_elo = tf.exp(self.trainable_params['draw_elo'])
             else:
-                elomatch += self.metaparam['bais_ext']
-                draw_elo = self.metaparam['draw_elo']
+                elomatch += self.given_params['bais_ext']
+                draw_elo = self.given_params['draw_elo']
             elomatch_win = elomatch - draw_elo
             elomatch_los = elomatch + draw_elo
             p_win = 1/(1. + tf.exp(-elomatch_win))
@@ -46,20 +46,20 @@ class Elostd(M.Model):
 
     def get_regularizer(self):
         regulizer_list = []
-        cost = ToolBox.get_raw_elo_cost(self.metaparam['metaparam0'], 0,
-                                        self.param['elo'], self.data_dict["nb_saisons"])
+        cost = ToolBox.get_raw_elo_cost(self.given_params['metaparam0'], 0,
+                                        self.trainable_params['elo'], self.data_dict["nb_saisons"])
         regulizer_list.append(cost)
 
-        cost = ToolBox.get_raw_elo_cost(self.metaparam['metaparamj0'], 0,
-                                        self.param['elojournee'], self.data_dict["max_match_id"])
+        cost = ToolBox.get_raw_elo_cost(self.given_params['metaparamj0'], 0,
+                                        self.trainable_params['elojournee'], self.data_dict["max_match_id"])
         regulizer_list.append(cost)
 
         time_multiplicator = tf.constant(self.data_dict['time_diff'])
-        cost = ToolBox.get_timediff_elo_cost(self.metaparam['metaparam2'], self.param['elo'], self.data_dict["nb_saisons"])
+        cost = ToolBox.get_timediff_elo_cost(self.given_params['metaparam2'], self.trainable_params['elo'], self.data_dict["nb_saisons"])
         regulizer_list.append(cost)
 
-        cost = ToolBox.get_timediff_elo_cost(self.metaparam['metaparamj2'],
-                                             self.param['elojournee'], self.data_dict["max_match_id"], tm = time_multiplicator)
+        cost = ToolBox.get_timediff_elo_cost(self.given_params['metaparamj2'],
+                                             self.trainable_params['elojournee'], self.data_dict["max_match_id"], tm = time_multiplicator)
         regulizer_list.append(cost)
 
         return tf.add_n(regulizer_list)
