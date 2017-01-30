@@ -49,7 +49,10 @@ class Cost:
 
     def __cost_logloss(self, m):
         reduction_indices = [i + 1 for i in range(self.__parameters['feature_dim'])]
-        probabilities = m.prediction[self.__parameters['target']] * m.current_slice[self.__parameters['target']]
+        pr = m.prediction[self.__parameters['target']]
+        norm = tf.reduce_sum(pr, axis=1)
+        pr_normed = pr / tf.pack([norm,norm,norm], axis=1)
+        probabilities = pr_normed * m.current_slice[self.__parameters['target']]
         probabilities = tf.reduce_sum(probabilities, reduction_indices=reduction_indices)
         if self.__parameters['regularized']:
             return tf.reduce_mean(-tf.log(probabilities + 1e-9)) + m.regulizer

@@ -49,8 +49,8 @@ class Launch:
 
         with open(Params.OUTPUT + '_' + timeNow, 'w') as csvfile:
             spamwriter = csv.writer(csvfile, delimiter=',', quotechar='|', quoting=csv.QUOTE_MINIMAL)
-            nb_slices = self.data.nb_slices(self.type_slice) if self.type_slice != "Shuffle" else 10
-            train_p = {'when_odd': False}
+            nb_slices = self.data.nb_slices(self.type_slice) if self.type_slice != "Shuffle" else 4
+            train_p = {'when_odd': True}
             test_p = {'when_odd': True}
             for i in range(nb_slices):
                 if i % 2 == 1 and self.type_slice == "Shuffle" and False:
@@ -68,9 +68,13 @@ class Launch:
                         timeStartModel = time.time()
                         model.reset_trainable_parameters()
 
+                        self.set_current_slice(slice_train, model_name)
+                        rll_train = 0
                         if model.is_trainable():
-                            self.set_current_slice(slice_train, model_name)
                             model.train('rll_res', Params.NB_LOOPS)
+                            rll_train = model.get_cost('rll_res')
+                        ll_train = model.get_cost('ll_res')
+
 
                         self.set_current_slice(slice_test, model_name)
 
@@ -89,14 +93,18 @@ class Launch:
                             if self.display <= 0:
                                 print(to_write)
                         evaluation[model_name]["current_ll"] = ll
+                        evaluation[model_name]["train_ll"] = ll_train
+                        evaluation[model_name]["train_rll"] = rll_train
                         evaluation[model_name]["time"] = time.time()-timeStartModel
                 self.data.next_slice(self.type_slice)
                 for key, val in sorted(evaluation.items()):
                     if "zDiff" in key:
                         val["current_ll"] = evaluation[val["from"]]["current_ll"] - evaluation[val["to"]]["current_ll"]
-                        to_write = str(val["current_ll"])
+                        val["train_ll"] = evaluation[val["from"]]["train_ll"] - evaluation[val["to"]]["train_ll"]
+                        val["train_rll"] = evaluation[val["from"]]["train_rll"] - evaluation[val["to"]]["train_rll"]
+                        to_write = [key, str(val["current_ll"]), str(val["train_ll"]), str(val['train_rll'])]
                         print(to_write)
-                        spamwriter.writerow([to_write])
+                        spamwriter.writerow(to_write)
                     val["ll_sum"] += val["current_ll"]
                     val["lls_sum"] += val["current_ll"] ** 2
                     if self.display <= 1:
@@ -104,12 +112,10 @@ class Launch:
                                                                                 str(val["current_ll"])[:7],
                                                                                 str(val["time"])[:4]))
                 if 'Regresseur' in self.models:
-                    for x in self.models['Regresseur'].param:
-                        if 'alpha_' in x:
-                            print(x, self.models['Regresseur'].run(self.models['Regresseur'].param[x]))
+                    for x in self.models['Regresseur'].trainable_params:
+                        if 'alpha' in x:
+                            print(x, self.models['Regresseur'].run(self.models['Regresseur'].trainable_params[x]))
                 print()
-            for model in self.models.values():
-                model.close()
 
         for model_name in evaluation.keys():
             evaluation[model_name]["Mean"] = evaluation[model_name]["ll_sum"] / nb_slices

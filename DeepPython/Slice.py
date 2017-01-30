@@ -46,8 +46,9 @@ class Slice:
 
     def __init_lpack(self, py_datas):
         size = 10
-        train = [{'left': 0, 'right': 4950 + size*i, 'name': 'train_'+str(i)} for i in range((len(py_datas) - 5000) // size)]
-        test = [{'left': 4950 + size * i, 'right': 4960 + size * i, 'name': 'test_'+str(i)} for i in range((len(py_datas) - 5000) // size)]
+        start = 6000
+        train = [{'left': 0, 'right': start + size*i, 'name': 'train_'+str(i)} for i in range((len(py_datas) - start-size*2) // size)]
+        test = [{'left': start + size * i, 'right': start + size * (i+1), 'name': 'test_'+str(i)} for i in range((len(py_datas) - start-size*2) // size)]
         self.nb_slices = len(train)
         self.__slices = {'train': train, 'test': test}
         self.__quick_check_slices(self.__group)

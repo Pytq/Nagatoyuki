@@ -1,9 +1,14 @@
 import csv
 from DeepPython import ToolBox, Params, Slice
 from DeepPython.ToolBox import number_of_days_since_1900
+import tensorflow as tf
+import copy
+import sys
 
 ALL_FEATURES = ['saison', 'team_h', 'team_a', 'res', 'score_h', 'score_a',
                 'odd_win_h', 'odd_tie', 'odd_los_h', 'odds', 'home_matchid', 'away_matchid']
+
+csv.field_size_limit(sys.maxsize)
 
 
 class Data:
@@ -18,8 +23,27 @@ class Data:
             self.__datas[key] = []
 
         self.__get_datas(filename)
+        nb_batchs = 1
+        self.rnn_datas = {}
+        self.rnn_datas['home_team'] = self.create_list([self.meta_datas["nb_matchs"], nb_batchs, self.meta_datas["nb_teams"]])
+        self.rnn_datas['away_team'] = self.create_list([self.meta_datas["nb_matchs"], nb_batchs, self.meta_datas["nb_teams"]])
+        self.rnn_datas['result'] = self.create_list([self.meta_datas["nb_matchs"], nb_batchs, 3])
+        self.rnn_datas['score'] = self.create_list([self.meta_datas["nb_matchs"], nb_batchs, (Params.MAX_GOALS+1)**2])
+        self.rnn_datas['counted_for_loss'] = self.create_list([self.meta_datas["nb_matchs"], nb_batchs, 1])
+        self.rnn_datas_types = {keys: tf.float32 for keys in self.rnn_datas.keys()}
+
         self.__get_formated_datas()
         Data.check_len(self.__datas)
+
+    def create_list(self, dims, random=False):
+        if dims == []:
+            if random:
+                return random.randint(1, 9)
+            else:
+                return 0.
+        mydims = copy.deepcopy(dims)
+        dim = mydims.pop(0)
+        return [self.create_list(mydims) for _ in range(dim)]
 
     def init_slices(self, group, feed_dict=None):
         if feed_dict is None:
@@ -139,18 +163,23 @@ class Data:
             dt2 = team_time_diff_matchs[self.id_to_team[i]][:-1]
             for j in range(len(dt1)):
                 self.meta_datas['time_diff'][i][j] = float(dt1[j] - dt2[j])
-        print("Loading data with {}".format(self.meta_datas))
-        print('Nb team per season: ', [len(x) for x in teams_per_saison])
+        # print("Loading data with {}".format(self.meta_datas))
+        # print('Nb team per season: ', [len(x) for x in teams_per_saison])
 
     def __get_formated_datas(self):
+        id_match = 0
+        batch = 0
         for dict_row in self.py_datas:
             self.__datas['odd_win_h'].append([dict_row["BbMxH"]])
             self.__datas['odd_tie'].append([dict_row["BbMxD"]])
             self.__datas['odd_los_h'].append([dict_row["BbMxA"]])
-            self.__datas['odds'].append([dict_row["BbMxH"], dict_row["BbMxD"], dict_row["BbMxA"]])
+            sum = 1./dict_row["BbMxD"] + 1./dict_row["BbMxH"] + 1./dict_row["BbMxA"]
+            self.__datas['odds'].append([1./(dict_row["BbMxH"]*sum), 1./(dict_row["BbMxD"]*sum), 1./(dict_row["BbMxA"]*sum)])
             self.__datas['saison'].append(ToolBox.make_vector(dict_row["saison"]-self.meta_datas['min_saison'], self.meta_datas['nb_saisons']))
-            self.__datas['team_h'].append(ToolBox.make_vector(self.team_to_id[dict_row["HomeTeam"]], self.meta_datas["nb_teams"]))
-            self.__datas['team_a'].append(ToolBox.make_vector(self.team_to_id[dict_row["AwayTeam"]], self.meta_datas["nb_teams"]))
+            home_team_id = self.team_to_id[dict_row["HomeTeam"]]
+            away_team_id = self.team_to_id[dict_row["AwayTeam"]]
+            self.__datas['team_h'].append(ToolBox.make_vector(home_team_id, self.meta_datas["nb_teams"]))
+            self.__datas['team_a'].append(ToolBox.make_vector(away_team_id, self.meta_datas["nb_teams"]))
             # self.__datas['home_sparce_matchid'].append(dict_row["HomeId"])
             # self.__datas['away_sparce_matchid'].append(dict_row["AwayId"])
             self.__datas['home_matchid'].append(ToolBox.make_vector(dict_row["HomeId"], self.meta_datas["max_match_id"]))
@@ -159,7 +188,32 @@ class Data:
             score_team_a = min(int(dict_row["scoreA"]), Params.MAX_GOALS)
             self.__datas['score_h'].append(ToolBox.make_vector(score_team_h, Params.MAX_GOALS+1))
             self.__datas['score_a'].append(ToolBox.make_vector(score_team_a, Params.MAX_GOALS+1))
-            self.__datas['res'].append(ToolBox.result_vect(int(dict_row["scoreH"]) - int(dict_row["scoreA"])))
+            home_goals = int(dict_row["scoreH"])
+            away_goals = int(dict_row["scoreA"])
+            score_diff = home_goals - away_goals
+            self.__datas['res'].append(ToolBox.result_vect(score_diff))
+
+            self.rnn_datas['home_team'][id_match][batch][home_team_id] = 1.
+            self.rnn_datas['away_team'][id_match][batch][away_team_id] = 1.
+            if score_diff > 0:
+                res = 0
+                if dict_row['FTR'] != 'H':
+                    raise Exception('????')
+            elif score_diff == 0:
+                res = 1
+                if dict_row['FTR'] != 'D':
+                    raise Exception('????')
+            else:
+                res = 2
+                if dict_row['FTR'] != 'A':
+                    raise Exception('????')
+            self.rnn_datas['result'][id_match][batch][res] = 1.
+            if id_match > 4950:
+                self.rnn_datas['counted_for_loss'][id_match][batch][0] = 1.
+            self.rnn_datas['score'][id_match][batch][min(away_goals,Params.MAX_GOALS)*(Params.MAX_GOALS+1) + min(home_goals,Params.MAX_GOALS)] = 1.
+            id_match += 1
+
+
 
     def __add_header_to_data(self, row, header):
         d = {}

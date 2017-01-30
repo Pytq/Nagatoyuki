@@ -12,10 +12,10 @@ class Regresseur(M.Model):
 
     def define_parameters(self):
         self.model_list = []
-        m = Elostdid.Elostd(data_dict=self.data_dict, name="elostd")
+        m = Elostdid.Elostd(data_dict=self.data_dict, name="elostd", session=self.session)
         m.set_params(Params.paramStd)
         self.model_list.append(m)
-        self.model_list.append(Bookmaker.Bookmaker(data_dict=self.data_dict, customizator={'normalized': True}, name='book_reg'))
+        self.model_list.append(Bookmaker.Bookmaker(data_dict=self.data_dict, customizator={'normalized': True}, name='book_reg', session=self.session))
         self.dictparam = {}
         for m in self.model_list:
             self.dictparam.update(m.dictparam)
