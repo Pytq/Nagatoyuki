@@ -64,6 +64,16 @@ def result_vect(k):
         return [1., 0., 0.]
 
 
+def batch_matmul_const(X,Y):
+    shape = X.get_shape().as_list()
+    shape_y = Y.get_shape().as_list()
+    if len(shape) != 3:
+        raise Exception('rank must be 3')
+    X = tf.reshape(X, [-1, shape[2]])
+    output = tf.matmul(X, Y)
+    return tf.reshape(output, [-1, shape[1], shape_y[1]])
+
+
 def format_name(s):
     return s.lower().replace("-", "").replace(" ", "")
 

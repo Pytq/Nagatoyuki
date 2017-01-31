@@ -7,7 +7,7 @@ Created on Fri Dec 16 16:32:06 2016
 import tensorflow as tf
 
 
-FILE = '../Datas/DataClean/test.txt'
+FILE = '../Datas/DataClean/SP1TotalNotCrossChecked.txt'
 FILE_TEST = '../Datas/DataClean/E0TotalNotCrossChecked.txt'
 FILE_TEST2 = '../Datas/DataClean/F1TotalNotCrossChecked.txt'
 OUTPUT = '../Output/output_new'

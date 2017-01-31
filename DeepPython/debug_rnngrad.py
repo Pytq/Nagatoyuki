@@ -39,10 +39,13 @@ class BasicRNNCell(tf.nn.rnn_cell.RNNCell):
         away_state = tf.batch_matmul(tf.expand_dims(input_dict['away_team'], axis=1), state)
         current_state = tf.concat(2, [home_state, away_state])
 
+
+        u = tf.Variable(np.eye(3), trainable=False, dtype=tf.float32)
+        u = tf.concat(0, [u,u])
         self.u = tf.Variable(np.eye(3), trainable=False, dtype=tf.float32)
-        u = tf.expand_dims(tf.concat(0, [self.u,self.u]), axis=0)
+        u = tf.expand_dims(tf.matmul(u, self.u), axis=0)
         current_state = tf.batch_matmul(current_state, u)
-        current_state = home_state + away_state
+        # current_state = home_state + away_state
         current_state = tf.squeeze(current_state, axis=1)
 
         prediction = self.state_to_prediction(current_state)
@@ -100,7 +103,7 @@ print('grad: ', grads)
 grads_values = sess.run(grads)
 print('grad value: ', grads_values)
 for val in grads_values:
-    isOk = isOk and val != 0.
+    isOk = isOk and (val != 0.).any()
 print()
 if isOk:
     print("This is Ok :)")
