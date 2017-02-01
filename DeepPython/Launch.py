@@ -28,7 +28,7 @@ class Launch:
         for model in self.models.values():
             model.add_cost(ll_res, trainable=False)
             if model.is_trainable():
-                model.add_cost(rll_res, trainable=True)
+                model.add_cost(rll_res, trainable=True) #model.add_cost(rll_res, trainable=True)
             model.finish_init()
             model.set_params(Params.paramStd)
 
@@ -73,8 +73,9 @@ class Launch:
                         if model.is_trainable():
                             model.train('rll_res', Params.NB_LOOPS)
                             rll_train = model.get_cost('rll_res')
+                            print(" R ZZ " + str(model_name) + " lossètrainR : " + str(rll_train))
                         ll_train = model.get_cost('ll_res')
-
+                        print(" ZZ " + str(model_name) + " lossètrain : " + str(ll_train))
 
                         self.set_current_slice(slice_test, model_name)
 
@@ -107,6 +108,9 @@ class Launch:
                         spamwriter.writerow(to_write)
                     val["ll_sum"] += val["current_ll"]
                     val["lls_sum"] += val["current_ll"] ** 2
+                    print("-- {} - {} : MEAN : {} DEV : {}.".format(key, i + 1,
+                                                                            str(val["ll_sum"]/(i+1))[:7],
+                                                                            str(val["lls_sum"]/(i+1))[:7]))
                     if self.display <= 1:
                         print("{} - Slice {}: Cost {} computed in {} s.".format(key, i+1,
                                                                                 str(val["current_ll"])[:7],
@@ -130,7 +134,8 @@ class Launch:
 
     def target_loss(self, params, model_name):
         model = self.models[model_name]
-        model.session.run(model.init_all)
+        #model.session.run(model.)
+        #model.reset_trainable_parameters()
         model.set_params(params)
         s_train, s_test = self.data.get_both_slices('Shuffle', train_p={'when_odd': False}, test_p={'when_odd': True})
         self.set_current_slice(s_train, model_name)
@@ -144,6 +149,7 @@ class Launch:
 
     def grid_search(self, model_name):
         model = self.models[model_name]
+        model.reset_trainable_parameters()
         self.data.init_slices('Shuffle', feed_dict={'p_train': 0.5})
         fun = lambda params: self.target_loss(params, model_name)
         to_optimize = model.meta_params()

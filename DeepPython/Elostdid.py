@@ -2,7 +2,7 @@ import tensorflow as tf
 from DeepPython import ToolBox, Model as M
 
 
-class Elostd(M.Model):
+class Elostid(M.Model):
     def meta_params(self):
         if self.customizator['trainit']:
             return ['metaparam0', 'metaparamj0', 'metaparam2', 'metaparamj2']

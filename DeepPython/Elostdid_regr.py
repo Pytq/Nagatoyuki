@@ -2,7 +2,8 @@ import tensorflow as tf
 from DeepPython import ToolBox, Model as M
 
 
-class Elostd(M.Model):
+class Elostdid_regr(M.Model):
+
     def meta_params(self):
         if self.customizator['trainit']:
             return ['metaparam0', 'metaparamj0', 'metaparam2', 'metaparamj2']
@@ -23,7 +24,7 @@ class Elostd(M.Model):
         self.trainable_params['elojournee'] = tf.Variable(tf.zeros([self.data_dict["nb_teams"], self.data_dict["max_match_id"]]))
         self.trainable_params['bais_ext'] = tf.Variable(0.)
         self.trainable_params['draw_elo'] = tf.Variable(0.)
-        self.trainable_params['alpha_e'] = tf.Variable(0.1, trainable=True)
+        self.trainable_params['alpha_e'] = tf.Variable(0.001, trainable=True)
         self.trainable_params['alpha_b'] = tf.Variable(1.0, trainable=True)
 
     def get_prediction(self, s, target):
@@ -44,9 +45,11 @@ class Elostd(M.Model):
             p_tie = 1. - p_los - p_win
             probas = tf.pack([p_win, p_tie, p_los], axis=1)
 
+            merlin_res=(probas +s['odds'])/2
             ln_proba = tf.log(probas)
             ln_book = tf.log(s['odds'])
-            return tf.exp(self.trainable_params['alpha_e']*ln_proba + self.trainable_params['alpha_b']*ln_book)
+            #return tf.exp(self.trainable_params['alpha_e']*ln_proba + self.trainable_params['alpha_b']*ln_book)
+            return merlin_res
 
         else:
             raise Exception(target + ' not implemented.')

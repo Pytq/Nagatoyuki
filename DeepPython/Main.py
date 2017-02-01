@@ -12,16 +12,17 @@ file = '../Output/output_new_2017_01_22_18_40_48'
 session = tf.Session()
 data = Data.Data(Params.FILE)
 
-bookm = Bookmaker.Bookmaker(data_dict=data.meta_datas, customizator={'normalized': True}, name='bookm', session=session)
-regr = Elostdid_regr.Elostd(data_dict=data.meta_datas, customizator={'trainit': True}, name='eloStd', session=session)
-elo = Elostdid.Elostd(data_dict=data.meta_datas, customizator={'trainit': True}, name='eloStd', session=session)
+#bookm = Bookmaker.Bookmaker(data_dict=data.meta_datas, customizator={'toNormalize': True}, name='bookm', session=session)
+#regr = Elostdid_regr.Elostdid_regr(data_dict=data.meta_datas, customizator={'trainit': True}, name='regr', session=session)
+elo = Elostdid.Elostid(data_dict=data.meta_datas, customizator={'trainit': True}, name='eloStd', session=session)
 
-dictModels = {"Bookmaker": bookm, "Elo" : elo, "Regresseur": regr}
+#dictModels = {"Bookmaker": bookm, "Elo" : elo, "Regresseur": regr}
+dictModels = {"Elo" : elo}
 init_dict = Params.paramStd
 
 launch = Launch.Launch(data, dictModels, 'Shuffle', display=1, init_dict=init_dict)
 
-launch.execute()
+launch.grid_search('Elo')
 
 
 

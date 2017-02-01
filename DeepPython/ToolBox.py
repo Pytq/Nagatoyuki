@@ -1,6 +1,7 @@
 import tensorflow as tf
 import datetime
 import random
+import math
 
 ELOCONST = -1.
 
@@ -97,10 +98,18 @@ def gen_date_to_id(s, nb_times, max_time, min_time):
     return int(nb_times * float(date - min_time)/float(max_time - min_time + 1))
 
 
+def soft_absolute_value(x,lamb):
+    res = 1/lamb * tf.log(tf.exp(-lamb * x) + tf.exp(lamb * x)) - 1/lamb * math.log(2)
+    return res
+
 def get_raw_elo_cost(metaparam0, metaparam1, elo, nb_times):
-    cost1 = tf.reduce_mean(tf.square(elo)) * metaparam0 * ELOCONST ** 2
-    cost2 = tf.reduce_mean(tf.square(tf.matmul(elo, first_time(nb_times))))
+    cost1 = tf.reduce_mean(soft_absolute_value(elo,0.5)) * metaparam0 * ELOCONST ** 2
+    cost2 = tf.reduce_mean(soft_absolute_value(tf.matmul(elo, first_time(nb_times)),0.5))
     cost2 *= metaparam1 * ELOCONST ** 2
+
+    #cost1 = tf.reduce_mean(tf.square(elo)) * metaparam0 * ELOCONST ** 2
+    #cost2 = tf.reduce_mean(tf.square(tf.matmul(elo, first_time(nb_times))))
+    #cost2 *= metaparam1 * (ELOCONST ** 2)
     if metaparam0 == 0:
         if metaparam1 == 0:
             return tf.constant(0.)

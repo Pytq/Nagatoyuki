@@ -211,6 +211,8 @@ class Data:
             if id_match > 4950:
                 self.rnn_datas['counted_for_loss'][id_match][batch][0] = 1.
             self.rnn_datas['score'][id_match][batch][min(away_goals,Params.MAX_GOALS)*(Params.MAX_GOALS+1) + min(home_goals,Params.MAX_GOALS)] = 1.
+
+            # INSERT HERE FOR RNN self.rnn_datas['blabla'][id_match][batch][...] = value
             id_match += 1
 
 
