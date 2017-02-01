@@ -44,9 +44,9 @@ class BasicRNNCell(tf.nn.rnn_cell.RNNCell):
         self.used_param = {}
         self.fix_param = {}
 
-        W = create_list([self.STATE_SIZE, LAYER1])
+        W = create_list([self.STATE_SIZE, PREDICTION_SIZE])
         #W = [[1., 0., -1.], [1., -2, 1.]]
-        b = create_list([LAYER1])
+        b = create_list([PREDICTION_SIZE])
         W2 = create_list([LAYER1, PREDICTION_SIZE])
         # W = [[1., 0., -1.], [1., -2, 1.]]
         b2 = create_list([PREDICTION_SIZE])
@@ -58,6 +58,17 @@ class BasicRNNCell(tf.nn.rnn_cell.RNNCell):
         step_size = create_list([self.STATE_SIZE], values=-4.)
         # step_size = [-4., -8]
         score_to_res = create_list([PREDICTION_SIZE, 3])
+
+        eyes = np.eye(self.STATE_SIZE)
+        empty = np.empty([self.STATE_SIZE, self.STATE_SIZE])
+        eyes_away = np.empty([self.STATE_SIZE, self.STATE_SIZE])
+        for i in range(self.STATE_SIZE):
+            eyes_away[i][self.STATE_SIZE - i - 1] = 1.
+        concat_home = np.concatenate([eyes, empty], axis=0)
+        concat_away = np.concatenate([empty, eyes], axis=0)
+
+        concat_home_tf = tf.Variable(initial_value=concat_home, trainable=False)
+        concat_away_tf = tf.Variable(initial_value=concat_away, trainable=False)
 
         # for goals_home in range(Params.MAX_GOALS+1):
         #     b[goals_home * (Params.MAX_GOALS + 1) + goals_home] += 0.
@@ -81,15 +92,15 @@ class BasicRNNCell(tf.nn.rnn_cell.RNNCell):
 
         self.fix_param['home_to_away'] = tf.Variable(initial_value=home_to_away, trainable=False)
 
-        self.trainable_param['W'] = tf.Variable(tf.truncated_normal([self.STATE_SIZE, LAYER1], stddev=stddev), trainable=True)
-        self.used_param['W'] = 0.01 * self.trainable_param['W'] + tf.Variable(initial_value=W, trainable=False)
+        self.trainable_param['W'] = tf.Variable(tf.truncated_normal([self.STATE_SIZE, PREDICTION_SIZE], stddev=stddev), trainable=True)
+        self.used_param['W'] = 0.1 * self.trainable_param['W'] + tf.Variable(initial_value=W, trainable=False)
 
-        self.trainable_param['b'] =  tf.Variable(tf.truncated_normal([LAYER1], stddev=stddev), trainable=True)
+        self.trainable_param['b'] =  tf.Variable(tf.truncated_normal([PREDICTION_SIZE], stddev=stddev), trainable=True)
         self.used_param['b'] = self.trainable_param['b'] + tf.Variable(initial_value=b, trainable=False)
 
         self.trainable_param['W2'] = tf.Variable(tf.truncated_normal([LAYER1, PREDICTION_SIZE], stddev=stddev),
                                                 trainable=True)
-        self.used_param['W2'] = 0.01 * self.trainable_param['W2'] + tf.Variable(initial_value=W2, trainable=False)
+        self.used_param['W2'] = 0.1 * self.trainable_param['W2'] + tf.Variable(initial_value=W2, trainable=False)
 
         self.trainable_param['b2'] = tf.Variable(tf.truncated_normal([PREDICTION_SIZE], stddev=stddev), trainable=True)
         self.used_param['b2'] = self.trainable_param['b2'] + tf.Variable(initial_value=b2, trainable=False)
@@ -115,7 +126,8 @@ class BasicRNNCell(tf.nn.rnn_cell.RNNCell):
         home_state = tf.squeeze(tf.batch_matmul(tf.expand_dims(input_dict['home_team'], axis=1), state), axis=1)  # [batch, state_size]       batch team x batch team statesize
         away_state = tf.squeeze(tf.batch_matmul(tf.expand_dims(input_dict['away_team'], axis=1), state), axis=1)  # [batch, state_size]       batch state x batch team 1 1 state
 
-        prediction = self.get_prediction(home_state, away_state)
+        current_state = tf.concat(1, [home_state, away_state])
+        prediction = self.get_prediction(current_state)
         # prediction_final = tf.nn.softmax(prediction)
 
         loss_result = tf.nn.softmax_cross_entropy_with_logits(prediction, input_dict['result'])
@@ -137,18 +149,19 @@ class BasicRNNCell(tf.nn.rnn_cell.RNNCell):
         input_dict = {self.keys[i]: inputs[i] for i in range(len(self.keys))}
         return input_dict
 
-    def get_prediction(self, home_state, away_state):
+    def get_prediction(self, current_state):
         # home_state = tf.nn.bias_add(home_state, self.used_param['goals'])
         # away_state = tf.nn.bias_add(away_state, self.used_param['goals'])
+        matrix = self.used_param['W']
         home_prediction = tf.matmul(home_state, self.used_param['W'])
-        away_prediction = -tf.matmul(away_state, self.used_param['W'])
-        # away_prediction = tf.matmul(away_prediction, self.fix_param['home_to_away'])
+        away_prediction = tf.matmul(away_state, self.used_param['W'])
+        away_prediction = tf.matmul(away_prediction, self.fix_param['home_to_away'])
         prediction = home_prediction + away_prediction
         prediction = tf.nn.bias_add(prediction, self.used_param['b'])
 
-        prediction = tf.log(tf.exp(prediction) + 1.)
-        prediction = tf.matmul(prediction, self.used_param['W2'])
-        prediction = tf.nn.bias_add(prediction, self.used_param['b2'])
+        #prediction = tf.log(tf.exp(prediction) + 1.)
+        #prediction = tf.matmul(prediction, self.used_param['W2'])
+        #prediction = tf.nn.bias_add(prediction, self.used_param['b2'])
         return prediction
 
 
